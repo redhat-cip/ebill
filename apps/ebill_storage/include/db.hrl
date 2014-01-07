@@ -1,0 +1,4 @@
+-record(ebilldb, {
+  connection,
+  database
+}).

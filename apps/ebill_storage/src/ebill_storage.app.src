@@ -1,0 +1,20 @@
+{application, ebill_storage, [
+  {description, "ebill_storage"},
+  {vsn, "1"},
+  {modules, []},
+  {registered, [ebill_storage_sup]},
+  {applications, [
+    kernel,
+    stdlib,
+    cowboy
+  ]},
+  {mod, {ebill_storage_app, []}},
+  {env, []},
+  {lager, [
+    {handlers, [
+      {lager_console_backend, info},
+      {lager_file_backend, [{file, "ebill_storage_error.log"}, {level, error}]},
+      {lager_file_backend, [{file, "ebill_storage_console.log"}, {level, info}]}
+    ]}
+  ]}
+]}.
