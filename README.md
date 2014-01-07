@@ -7,7 +7,7 @@ A cloud-oriented rating server
 ### Requirements 
 
 * [erlang](http://www.erlang.org)
-* [erlang](http://couchdb.apache.org).
+* [couchdb](http://couchdb.apache.org).
 
 > **Why CouchDB ?**
 >
@@ -37,7 +37,7 @@ Thus, you can create a `ebill.conf` file on the server and every storage node.
 
 This file can be placed in `/etc/`, `/Library/Application Support/ebill/`,
 `~/Library/Application Support/ebill/`, `~/.ebill` and `.`. If many files 
-exist, eMedia will read then in this order and update the configuration 
+exist, eBill will read then in this order and update the configuration 
 consequently.
 
 You can add comments in a configuration file. A comment start with a `#`.
@@ -161,4 +161,4 @@ Data example :
 
 ## Copyright
 
-Copyright (c) 2013 eNovance.  All rights reserved.
+Copyright (c) 2013, 2014 eNovance.  All rights reserved.
