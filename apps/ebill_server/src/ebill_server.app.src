@@ -1,12 +1,14 @@
 {application, ebill_server, [
-  {description, "ebill_server"},
+  {description, "eBill Server"},
   {vsn, "1"},
   {modules, []},
   {registered, [ebill_server_sup]},
   {applications, [
     kernel,
     stdlib,
-    cowboy
+    lager,
+    cowboy,
+    ebill_config
   ]},
   {mod, {ebill_server_app, []}},
   {env, []},

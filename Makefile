@@ -20,6 +20,7 @@ deps:
 
 clean:
 	@$(REBAR) clean
+	rm erl_crash.dump
 
 realclean: clean
 	@$(REBAR) delete-deps
@@ -58,7 +59,7 @@ doc:
 	done;
 
 dev:
-	@erl -pa ebin include deps/*/ebin deps/*/include ebin include -boot start_sasl
+	@erl -pa ebin include deps/*/ebin deps/*/include apps/*/ebin apps/*/include 
 
 analyze: checkplt
 	@$(REBAR) skip_deps=true dialyze

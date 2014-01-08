@@ -1,12 +1,14 @@
 {application, ebill_storage, [
-  {description, "ebill_storage"},
+  {description, "eBill Storage Server"},
   {vsn, "1"},
   {modules, []},
   {registered, [ebill_storage_sup]},
   {applications, [
     kernel,
     stdlib,
-    cowboy
+    lager,
+    cowboy,
+    ebill_storage
   ]},
   {mod, {ebill_storage_app, []}},
   {env, []},

@@ -43,7 +43,7 @@ while (( "$#" )); do
   shift
 done
 
-if [ "x$APP" = "x" ] ; then
+if [ "x$APP" = "x" ] || [ "$APP" = "config" ] ; then
   help "No app given. I don't know what to start!"
   exit 1
 fi
@@ -59,4 +59,4 @@ if [ $COMPILE = true ] ; then
   ./rebar compile
 fi
 
-erl +pc unicode -pa $PWD/ebin $PWD/apps/ebill_$APP/ebin $PWD/deps/*/ebin $NOSHELL -name $NAME -s ebill_$APP
+erl +pc unicode -pa $PWD/ebin $PWD/apps/ebill_config/ebin $PWD/apps/ebill_$APP/ebin $PWD/deps/*/ebin $NOSHELL -name $NAME -s ebill_$APP

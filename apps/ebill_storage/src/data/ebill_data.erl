@@ -1,8 +1,16 @@
 -module(ebill_data).
-
 -behaviour(gen_server).
-
+-define(SERVER, ?MODULE).
 -include("../../include/db.hrl").
+
+-export([
+  start_link/0,
+  count/0,
+  add/4,
+  add/5,
+  add/6,
+  find_by_metric/2
+]).
 
 -export([
   init/1,
@@ -13,25 +21,13 @@
   code_change/3
 ]).
 
--export([
-  start/0
-]).
-
--export([
-  count/0,
-  add/4,
-  add/5,
-  add/6,
-  find_by_metric/2
-]).
-
 % wrappers
-start() ->
+start_link() ->
   couchbeam:start(),
-  gen_server:start_link({local, ?MODULE}, ?MODULE, [], []).
+  gen_server:start_link({local, ?SERVER}, ?MODULE, [], []).
 
 count() ->
-  gen_server:call(?MODULE, {count}).
+  gen_server:call(?SERVER, {count}).
 
 add(ID, Resource, Metric, Value) ->
   add(ID, Resource, Metric, Value, []).
@@ -39,10 +35,10 @@ add(ID, Resource, Metric, Value, Metadatas) ->
   add(ID, Resource, Metric, Value, Metadatas, ec_date:format("Y-m-d\\TH:i:s",calendar:now_to_local_time(now()))).
 add(ID, Resource, Metric, Value, Metadatas, Date) 
     when is_bitstring(ID), is_bitstring(Resource), is_list(Metadatas), is_atom(Metric), is_number(Value), is_list(Date) ->
-  gen_server:call(?MODULE, {add, ID, Resource, Metric, Value, Metadatas, Date}).
+  gen_server:call(?SERVER, {add, ID, Resource, Metric, Value, Metadatas, Date}).
 
 find_by_metric(ID, Metric) when is_atom(Metric) ->
-  gen_server:call(?MODULE, {find_by_metric, ID, Metric}).
+  gen_server:call(?SERVER, {find_by_metric, ID, Metric}).
 
 % server
 
@@ -52,6 +48,7 @@ init([]) ->
 
 %% @hidden
 terminate(_Reason, _Config) -> 
+  couchbeam:stop(),
   ok.
 
 %% @hidden

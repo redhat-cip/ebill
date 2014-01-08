@@ -1,0 +1,14 @@
+{application, ebill_config,
+ [
+  {description, "eBill configuration"},
+  {vsn, "1.0.0"},
+  {modules, [ebill_config_app, ebill_config_sup, ebill_config]},
+  {registered, [ebill_config]},
+  {applications, [
+                  kernel,
+                  stdlib,
+                  lager
+                 ]},
+  {mod, { ebill_config_app, []}},
+  {env, []}
+ ]}.

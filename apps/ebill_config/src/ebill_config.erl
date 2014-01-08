@@ -1,37 +1,37 @@
 %% @doc This module allow you to acces the ebill configuration
 -module(ebill_config).
-
 -behaviour(gen_server).
+-define(SERVER, ?MODULE).
 
--include("../../include/ebill.hrl").
+-include("../include/ebill.hrl").
+
+-export([start_link/0, get/1]).
 
 -export([init/1, handle_call/3, handle_cast/2, handle_info/2, terminate/2, code_change/3]).
--export([start/0]).
--export([get/1]).
 
 % wrappers
 
 %% @doc Start the configuration server
-start() -> 
-  gen_server:start_link({local, ?MODULE}, ?MODULE, [], []).
+start_link() -> 
+  gen_server:start_link({local, ?SERVER}, ?MODULE, [], []).
 
 %% @doc Access a configuration information
 get(tcp_server_port) ->
-  gen_server:call(?MODULE, {get_tcp_server_port});
+  gen_server:call(?SERVER, {get_tcp_server_port});
 get(max_server_conn) ->
-  gen_server:call(?MODULE, {get_max_server_conn});
+  gen_server:call(?SERVER, {get_max_server_conn});
 get(tcp_storage_port) ->
-  gen_server:call(?MODULE, {get_tcp_storage_port});
+  gen_server:call(?SERVER, {get_tcp_storage_port});
 get(max_storage_conn) ->
-  gen_server:call(?MODULE, {get_max_storage_conn});
+  gen_server:call(?SERVER, {get_max_storage_conn});
 get(cookie) ->
-  gen_server:call(?MODULE, {get_cookie});
+  gen_server:call(?SERVER, {get_cookie});
 get(db_storage_host) ->
-  gen_server:call(?MODULE, {get_db_storage_host});
+  gen_server:call(?SERVER, {get_db_storage_host});
 get(db_storage_port) ->
-  gen_server:call(?MODULE, {get_db_storage_port});
+  gen_server:call(?SERVER, {get_db_storage_port});
 get(db_storage_name) ->
-  gen_server:call(?MODULE, {get_db_storage_name});
+  gen_server:call(?SERVER, {get_db_storage_name});
 get(_) ->
   {error, "Unknown config tag"}.
 

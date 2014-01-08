@@ -1,5 +1,4 @@
--module(ebill_storage_sup).
-
+-module(ebill_config_sup).
 -behaviour(supervisor).
 
 %% API
@@ -23,6 +22,5 @@ start_link() ->
 %% ===================================================================
 
 init([]) ->
-    {ok, { {one_for_one, 5, 10}, [?CHILD(ebill_data, worker)]} }.
-
+    {ok, { {one_for_one, 5, 10}, [?CHILD(ebill_config, worker)]} }.
 
