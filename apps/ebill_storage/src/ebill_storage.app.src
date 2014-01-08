@@ -8,7 +8,7 @@
     stdlib,
     lager,
     cowboy,
-    ebill_storage
+    ebill_config
   ]},
   {mod, {ebill_storage_app, []}},
   {env, []},

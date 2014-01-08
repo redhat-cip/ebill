@@ -26,7 +26,7 @@ realclean: clean
 	@$(REBAR) delete-deps
 
 test:
-	@$(REBAR) skip_deps=true ct
+	@$(REBAR) skip_deps=true eunit
 
 rel: deps
 	@$(REBAR) compile generate

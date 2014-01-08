@@ -9,7 +9,14 @@
   add/4,
   add/5,
   add/6,
-  find_by_metric/2
+  del/1,
+  find_by_metric/2,
+  find_by_resource/2,
+  find_by_resource_and_metric/3,
+  find_by_date/2,
+  find_by_metric_and_date/3,
+  find_by_resource_and_date/3,
+  find_by_resource_metric_and_date/4
 ]).
 
 -export([
@@ -37,8 +44,30 @@ add(ID, Resource, Metric, Value, Metadatas, Date)
     when is_bitstring(ID), is_bitstring(Resource), is_list(Metadatas), is_atom(Metric), is_number(Value), is_list(Date) ->
   gen_server:call(?SERVER, {add, ID, Resource, Metric, Value, Metadatas, Date}).
 
+del(Doc) ->
+  gen_server:call(?SERVER, {del, Doc}).
+
 find_by_metric(ID, Metric) when is_atom(Metric) ->
-  gen_server:call(?SERVER, {find_by_metric, ID, Metric}).
+  gen_server:call(?SERVER, {do_view, [ID, Metric], "find_by_metric"}).
+
+find_by_resource(ID, Resource) when is_bitstring(Resource) ->
+  gen_server:call(?SERVER, {do_view, [ID, Resource], "find_by_resource"}).
+
+find_by_resource_and_metric(ID, Resource, Metric) when is_bitstring(Resource), is_atom(Metric) ->
+  gen_server:call(?SERVER, {do_view, [ID, Resource, Metric], "find_by_resource_and_metric"}).
+
+% DateInterval = [{start_date, StartDate}, {end_date, EndDate}]
+find_by_date(ID, DateInterval) ->
+  gen_server:call(?SERVER, {do_view_interval, do_date_interval([ID], DateInterval), "find_by_dates"}).
+
+find_by_metric_and_date(ID, Metric, DateInterval) ->
+  gen_server:call(?SERVER, {do_view_interval, do_date_interval([ID, Metric], DateInterval), "find_by_metric_and_dates"}).
+
+find_by_resource_and_date(ID, Resource, DateInterval) ->
+  gen_server:call(?SERVER, {do_view_interval, do_date_interval([ID, Resource], DateInterval), "find_by_resource_and_dates"}).
+
+find_by_resource_metric_and_date(ID, Resource, Metric, DateInterval) ->
+  gen_server:call(?SERVER, {do_view_interval, do_date_interval([ID, Resource, Metric], DateInterval), "find_by_resource_metric_and_dates"}).
 
 % server
 
@@ -67,7 +96,7 @@ handle_call({count}, _From, Config) ->
   #ebilldb{ database = Database } = Config,
   Result = case couchbeam_view:count(Database) of
     {error, Reason} -> {error, Reason};
-    Count -> {ok, Count}
+    Count -> {ok, Count - 1} % We must remove _design view
   end,
   {reply, Result, Config};
 handle_call({add, ID, Resource, Metric, Value, Metadatas, Date}, _From, Config) ->
@@ -82,9 +111,17 @@ handle_call({add, ID, Resource, Metric, Value, Metadatas, Date}, _From, Config) 
   ]},
   Result = couchbeam:save_doc(Database, Doc),
   {reply, Result, Config};
-handle_call({find_by_metric, ID, Metric}, _From, Config) ->
+handle_call({del, Doc}, _From, Config) ->
   #ebilldb{ database = Database } = Config,
-  Result = do_find_by_metric(Database, ID, Metric),
+  Result = couchbeam:delete_doc(Database, Doc),
+  {reply, Result, Config};
+handle_call({do_view, Key, ViewName}, _From, Config) ->
+  #ebilldb{ database = Database } = Config,
+  Result = do_map_view(Database, Key, ViewName),
+  {reply, Result, Config};
+handle_call({do_view_interval, {StartKey, EndKey}, ViewName}, _From, Config) ->
+  #ebilldb{ database = Database } = Config,
+  Result = do_map_view_interval(Database, StartKey, EndKey, ViewName),
   {reply, Result, Config};
 handle_call(_Message, _From, Config) ->
   {reply, error, Config}.
@@ -153,11 +190,33 @@ create_views(Database) ->
   {ok, _DesignDoc1} = couchbeam:save_doc(Database, Views),
   {ok, Database}.
 
-do_find_by_metric(Database, ID, Metric) ->
-  MetricKey = [ID,Metric],
+do_map_view(Database, Key, View) ->
   {ok, Result} = couchbeam_view:fetch(
       Database,
-      {"ebill", "find_by_metric"},
-      [{key, MetricKey}]
+      {"ebill", View},
+      [{key, Key}]
   ),
   Result.
+
+do_map_view_interval(Database, StartKey, EndKey, View) ->
+  {ok, Result} = couchbeam_view:fetch(
+      Database,
+      {"ebill", View},
+      [{startkey, StartKey}, {endkey, EndKey}]
+  ),
+  Result.
+
+do_date_interval(FixedTablePart, DateInterval) ->
+  DIDict = ec_dict:from_list(DateInterval),
+  StartDate = try ec_dict:get(start_date, DIDict) of
+    StartDateValue -> StartDateValue
+  catch
+    _ -> <<"1900-01-01T00:00:00">>
+  end,
+  EndDate = try ec_dict:get(end_date, DIDict) of
+    EndDateValue -> EndDateValue
+  catch
+    _ -> ec_date:format("Y-m-d\\TH:i:s",calendar:now_to_local_time(now()))
+  end,
+  {FixedTablePart ++ [StartDate], FixedTablePart ++ [EndDate]}.
+
