@@ -10,6 +10,7 @@
   add/5,
   add/6,
   del/1,
+  metric_list/0,
   find_by_metric/2,
   find_by_resource/2,
   find_by_resource_and_metric/3,
@@ -48,26 +49,36 @@ del(Doc) ->
   gen_server:call(?SERVER, {del, Doc}).
 
 find_by_metric(ID, Metric) when is_atom(Metric) ->
-  gen_server:call(?SERVER, {do_view, [ID, Metric], "find_by_metric"}).
+  gen_server:call(?SERVER, {do_map_reduce, "find_by_metric", [{options, [{key, [ID, Metric]}]}]}).
 
 find_by_resource(ID, Resource) when is_bitstring(Resource) ->
-  gen_server:call(?SERVER, {do_view, [ID, Resource], "find_by_resource"}).
+  gen_server:call(?SERVER, {do_map_reduce, "find_by_resource", [{options, [{key, [ID, Resource]}]}]}).
 
 find_by_resource_and_metric(ID, Resource, Metric) when is_bitstring(Resource), is_atom(Metric) ->
-  gen_server:call(?SERVER, {do_view, [ID, Resource, Metric], "find_by_resource_and_metric"}).
+  gen_server:call(?SERVER, {do_map_reduce, "find_by_resource_and_metric", [{options, [{key, [ID, Resource, Metric]}]}]}).
 
 % DateInterval = [{start_date, StartDate}, {end_date, EndDate}]
 find_by_date(ID, DateInterval) ->
-  gen_server:call(?SERVER, {do_view_interval, do_date_interval([ID], DateInterval), "find_by_dates"}).
+  {Start, End} = do_date_interval([ID], DateInterval),
+  gen_server:call(?SERVER, {do_map_reduce, "find_by_date", [{options, [{startkey, Start}, {endkey, End}]}]}).
 
 find_by_metric_and_date(ID, Metric, DateInterval) ->
-  gen_server:call(?SERVER, {do_view_interval, do_date_interval([ID, Metric], DateInterval), "find_by_metric_and_dates"}).
+  {Start, End} = do_date_interval([ID, Metric], DateInterval),
+  gen_server:call(?SERVER, {do_map_reduce, "find_by_metric_and_date", [{options, [{startkey, Start}, {endkey, End}]}]}).
 
 find_by_resource_and_date(ID, Resource, DateInterval) ->
-  gen_server:call(?SERVER, {do_view_interval, do_date_interval([ID, Resource], DateInterval), "find_by_resource_and_dates"}).
+  {Start, End} = do_date_interval([ID, Resource], DateInterval),
+  gen_server:call(?SERVER, {do_map_reduce, "find_by_resource_and_date", [{options, [{startkey, Start}, {endkey, End}]}]}).
 
 find_by_resource_metric_and_date(ID, Resource, Metric, DateInterval) ->
-  gen_server:call(?SERVER, {do_view_interval, do_date_interval([ID, Resource, Metric], DateInterval), "find_by_resource_metric_and_dates"}).
+  {Start, End} = do_date_interval([ID, Resource, Metric], DateInterval),
+  gen_server:call(?SERVER, {do_map_reduce, "find_by_resource_metric_and_date", [{options, [{startkey, Start}, {endkey, End}]}]}).
+
+metric_list() ->
+  gen_server:call(?SERVER, {do_map_reduce, "metric_list", [{options, [reduce, group]}, {extract, fun({E}) -> 
+              {ok, V} = dict:find(<<"key">>, dict:from_list(E)), 
+              binary_to_atom(V, utf8)
+          end}]}).
 
 % server
 
@@ -115,13 +126,20 @@ handle_call({del, Doc}, _From, Config) ->
   #ebilldb{ database = Database } = Config,
   Result = couchbeam:delete_doc(Database, Doc),
   {reply, Result, Config};
-handle_call({do_view, Key, ViewName}, _From, Config) ->
+handle_call({do_map_reduce, ViewName, Options}, _From, Config) ->
   #ebilldb{ database = Database } = Config,
-  Result = do_map_view(Database, Key, ViewName),
-  {reply, Result, Config};
-handle_call({do_view_interval, {StartKey, EndKey}, ViewName}, _From, Config) ->
-  #ebilldb{ database = Database } = Config,
-  Result = do_map_view_interval(Database, StartKey, EndKey, ViewName),
+  OptionsDict = dict:from_list(Options),
+  OptionsDict1 = case dict:is_key(options, OptionsDict) of
+    true -> OptionsDict;
+    false -> dict:append(options, [], OptionsDict)
+  end,
+  Result = case dict:is_key(extract, OptionsDict1) of
+    true -> lists:map(
+        dict:fetch(extract, OptionsDict1),
+        do_map_reduce_view(Database, ViewName, dict:fetch(options, OptionsDict1))
+        );
+    false -> do_map_reduce_view(Database, ViewName, dict:fetch(options, OptionsDict1))
+  end,
   {reply, Result, Config};
 handle_call(_Message, _From, Config) ->
   {reply, error, Config}.
@@ -156,19 +174,19 @@ create_views(Database) ->
     {<<"_id">>, <<"_design/ebill">>},
     {<<"language">>,<<"javascript">>},
     {<<"views">>,
-       {[{<<"find_by_resource_metric_and_dates">>,
+       {[{<<"find_by_resource_metric_and_date">>,
          {[{<<"map">>,
            <<"function (doc) {\n if (doc.billing_id && doc.resource && doc.metric && doc.date) {\n emit([doc.billing_id, doc.resource, doc.metric, doc.date], doc);\n}\n}">>
          }]}
-       },{<<"find_by_resource_and_dates">>,
+       },{<<"find_by_resource_and_date">>,
          {[{<<"map">>,
            <<"function (doc) {\n if (doc.billing_id && doc.resource && doc.date) {\n emit([doc.billing_id, doc.resource, doc.date], doc);\n}\n}">>
          }]}
-       },{<<"find_by_metrics_and_dates">>,
+       },{<<"find_by_metric_and_date">>,
          {[{<<"map">>,
            <<"function (doc) {\n if (doc.billing_id && doc.metric && doc.date) {\n emit([doc.billing_id, doc.metric, doc.date], doc);\n}\n}">>
          }]}
-       },{<<"find_by_dates">>,
+       },{<<"find_by_date">>,
          {[{<<"map">>,
            <<"function (doc) {\n if (doc.billing_id && doc.date) {\n emit([doc.billing_id, doc.date], doc);\n}\n}">>
          }]}
@@ -184,37 +202,36 @@ create_views(Database) ->
          {[{<<"map">>,
            <<"function (doc) {\n if (doc.billing_id && doc.resource && doc.metric) {\n emit([doc.billing_id, doc.resource, doc.metric], doc);\n}\n}">>
          }]}
+       },{<<"metric_list">>,
+         {[{<<"map">>,
+           <<"function (doc) {\n if (doc.metric) {\n emit(doc.metric, null);\n}\n}">>
+           }, 
+           {<<"reduce">>,
+           <<"function (key, values, rereduce) {\n return null;\n }">>
+           }]}
        }]}
     }
   ]},
   {ok, _DesignDoc1} = couchbeam:save_doc(Database, Views),
   {ok, Database}.
 
-do_map_view(Database, Key, View) ->
+do_map_reduce_view(Database, View, Options) ->
   {ok, Result} = couchbeam_view:fetch(
       Database,
       {"ebill", View},
-      [{key, Key}]
-  ),
-  Result.
-
-do_map_view_interval(Database, StartKey, EndKey, View) ->
-  {ok, Result} = couchbeam_view:fetch(
-      Database,
-      {"ebill", View},
-      [{startkey, StartKey}, {endkey, EndKey}]
+      Options
   ),
   Result.
 
 do_date_interval(FixedTablePart, DateInterval) ->
   DIDict = ec_dict:from_list(DateInterval),
   StartDate = try ec_dict:get(start_date, DIDict) of
-    StartDateValue -> StartDateValue
+    StartDateValue -> list_to_bitstring(ec_date:format("Y-m-d\\TH:i:s", ec_date:parse(bitstring_to_list(StartDateValue))))
   catch
     _ -> <<"1900-01-01T00:00:00">>
   end,
   EndDate = try ec_dict:get(end_date, DIDict) of
-    EndDateValue -> EndDateValue
+    EndDateValue -> list_to_bitstring(ec_date:format("Y-m-d\\TH:i:s", ec_date:parse(bitstring_to_list(EndDateValue))))
   catch
     _ -> ec_date:format("Y-m-d\\TH:i:s",calendar:now_to_local_time(now()))
   end,
