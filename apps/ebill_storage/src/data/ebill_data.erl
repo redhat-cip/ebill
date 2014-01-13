@@ -42,7 +42,7 @@ add(ID, Resource, Metric, Value) ->
 add(ID, Resource, Metric, Value, Metadatas) ->
   add(ID, Resource, Metric, Value, Metadatas, ec_date:format("Y-m-d\\TH:i:s",calendar:now_to_local_time(now()))).
 add(ID, Resource, Metric, Value, Metadatas, Date) 
-    when is_bitstring(ID), is_bitstring(Resource), is_list(Metadatas), is_atom(Metric), is_number(Value), is_list(Date) ->
+    when is_bitstring(ID), is_bitstring(Resource), is_list(Metadatas), is_atom(Metric), is_bitstring(Date) ->
   gen_server:call(?SERVER, {add, ID, Resource, Metric, Value, Metadatas, Date}).
 
 del(Doc) ->
@@ -163,7 +163,7 @@ init_connection() ->
   }.
 
 sanitize_date(Date) ->
-  ParsedDate = case ec_date:parse(Date) of
+  ParsedDate = case ec_date:parse(bitstring_to_list(Date)) of
     {{Year, Month, Day}, {Hour, Minute, Second}} -> {{Year, Month, Day}, {Hour, Minute, Second, 0}};
     Other -> Other
   end,
@@ -233,7 +233,7 @@ do_date_interval(FixedTablePart, DateInterval) ->
   EndDate = try ec_dict:get(end_date, DIDict) of
     EndDateValue -> list_to_bitstring(ec_date:format("Y-m-d\\TH:i:s", ec_date:parse(bitstring_to_list(EndDateValue))))
   catch
-    _ -> ec_date:format("Y-m-d\\TH:i:s",calendar:now_to_local_time(now()))
+    _ -> list_to_bitstring(ec_date:format("Y-m-d\\TH:i:s",calendar:now_to_local_time(now())))
   end,
   {FixedTablePart ++ [StartDate], FixedTablePart ++ [EndDate]}.
 

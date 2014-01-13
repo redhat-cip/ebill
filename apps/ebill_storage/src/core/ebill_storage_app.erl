@@ -29,6 +29,7 @@ routes() ->
   [
     {'_', [
       {"/", ebill_storage_handler, []},
+      {"/metrics", ebill_metrics_handler, []},
       {"/static/[...]", cowboy_static, {priv_dir, ebill_storage, "static", [
         {mimetypes, cow_mimetypes, all}
       ]}}

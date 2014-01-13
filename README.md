@@ -70,6 +70,54 @@ On booth server and storage nodes :
 
 ## APIs
 
+### Storage/Metric
+
+`PUT /metrics`
+:  Add metrics in the database
+
+Fields `user_id`, `resource_id` and `metrics` are required. If no date (field `date`) is given, the current date will be used.
+
+Data example :
+
+    {
+      "user_id": "EA08CC13-1C54-4044-BB67-B0529CF2E634",
+      "resource_id": "FB45D8CF-0FFA-4C15-9A60-4256D997EFF9",
+      "metrics": {
+        "cpu.usage": 80,
+        "mem.usage": 1024
+      },
+      "date": "2014-01-13T14:22:27.0",
+      "metadatas": {
+        "iaas.name": "Amazon EC2",
+        "iaas.tenant.name": "eNovance",
+        "iaas.user.name": "glejeune"
+      }
+    }
+
+Example :
+
+    curl -i -X PUT -H "Content-Type: application/json" http://localhost:8090/metrics -d "{ \
+      \"user_id\": \"EA08CC13-1C54-4044-BB67-B0529CF2E634\", \
+      \"resource_id\": \"FB45D8CF-0FFA-4C15-9A60-4256D997EFF9\", \
+      \"metrics\": { \
+        \"cpu.usage\": 80, \
+        \"mem.usage\": 1024 \
+      }, \
+      \"date\": \"2014-01-13T14:22:27.0\", \
+      \"metadatas\": { \
+        \"iaas.name\": \"Amazon EC2\", \
+        \"iaas.tenant.name\": \"eNovance\", \
+        \"iaas.user.name\": \"glejeune\" \
+      } \
+    }"
+    < HTTP/1.1 204 No Content
+    < connection: keep-alive
+    < server: Cowboy
+    < date: Mon, 13 Jan 2014 14:16:10 GMT
+    < content-length: 0
+    < content-type: text/html
+    < vary: accept
+
 ### Server/Billing
 
 `POST /bill`
