@@ -123,13 +123,19 @@ Example :
 `POST /bill`
 :  Get the billing informations
 
+Only fields `user_id` and `template` are required.
+
+Allowed filters operators : `==`, `!=`, `<=`, `>=`, `<`, `>`, `=~` (assume that the value is a regex), `in` (assume that the value is a list).
+
 Data example :
 
     {
-      "user": "EA08CC13-1C54-4044-BB67-B0529CF2E634",
+      "user_id": "EA08CC13-1C54-4044-BB67-B0529CF2E634",
+      "resource_id": "FB45D8CF-0FFA-4C15-9A60-4256D997EFF9",
+      "metrics": ["cpu.usage", "mem.usage"],
       "period": {
-        "start": "2013-01-06",
-        "end": "2013-30-06"
+        "from": "2013-01-06",
+        "to": "2013-30-06"
       },
       "filters": [
         {"iaas.name", "=~", "[a|A]mazon.*"},
@@ -137,6 +143,21 @@ Data example :
       ],
       "template": "christmas_billing"
     }
+
+Example :
+
+    curl -i -X POST -H "Content-Type: application/json" http://localhost:8080/bill -d "{ \
+      \"user_id\": \"EA08CC13-1C54-4044-BB67-B0529CF2E634\", \
+      \"period\": { \
+        \"from\": \"2013-01-06\", \
+        \"to\": \"2013-30-06\" \
+      }, \
+      \"filters\": [ \
+        {\"iaas.name\", \"=~\", \"[a|A]mazon.*\"}, \
+        {\"iaas.tenant.name\", \"==\", \"eNovance\"} \
+      ], \
+      \"template\": \"christmas_billing\" \
+    }"
 
 ### Server/Templates
 
