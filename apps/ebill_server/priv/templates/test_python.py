@@ -1,9 +1,9 @@
 import json
-import version
+import ebill
 
 
 def rate(data):
-    print("eBill version " + version.EBILL_VERSION)
+    print("eBill version " + ebill.EBILL_VERSION)
     print("data received : ")
     print(data)
     json.loads(data)
