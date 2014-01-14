@@ -224,6 +224,46 @@ Example :
         >
         > {"template":"info"}
 
+## Templates
+
+Templates are Ruby or Python scripts.
+
+Example :
+
+```ruby
+require 'ebill'
+
+def rate(data)
+  EBill.info("Data receive : #{data.inspect}")
+
+  json = EBill.to_json(data)
+  
+  # do something with data ...
+
+  EBill.ok({:total => amount, :currency => "USD"})
+end
+```
+
+### Ruby helpers
+
+`EBill.info(x)`
+: log message `x` with level info
+
+`EBill.error(x)`
+: log message `x` with level error
+
+`EBill.warning(x)`
+: log message `x` with level warning
+
+`EBill.to_json(x)`
+: Parse the JSON string `x` to a Ruby data structure
+
+`EBill.ok(x)`
+: Generate a return message from a valide Ruby data structure
+
+`EBill.error(x)`
+: Generate a return message from an error
+
 ## Authors
 
 * Grégoire Lejeune <gregoire.lejeune@enovance.com>

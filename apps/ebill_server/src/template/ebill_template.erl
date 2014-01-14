@@ -74,22 +74,28 @@ execute(Script, Data) ->
 
 execute_ruby_template(ScriptFile, Data) ->
   ModulePath = filename:dirname(ScriptFile),
+  HelperPath = filename:join([ModulePath, "helpers", "ruby"]),
   ModuleName = filename:basename(ScriptFile, ".rb"),
-  {ok, R} = ruby:start([{ruby_lib, ModulePath}]),
-  Result = ruby:call(R, list_to_atom(ModuleName), rate, [Data]),
+  {ok, R} = ruby:start([{ruby_lib, [ModulePath, HelperPath]}]),
+  CallResult = ruby:call(R, list_to_atom(ModuleName), rate, [Data]),
   ruby:stop(R),
-  Result.
+  [{Code, JSONResult}|_] = jsx:decode(CallResult),
+  {binary_to_atom(Code, utf8), JSONResult}.
 
 execute_python_template(ScriptFile, Data) ->
   ModulePath = filename:dirname(ScriptFile),
+  HelperPath = filename:join([ModulePath, "helpers", "python"]),
   ModuleName = filename:basename(ScriptFile, ".py"),
-  {ok, R} = python:start([{python_path, ModulePath}]),
-  Result = python:call(R, list_to_atom(ModuleName), rate, [Data]),
+  {ok, R} = python:start([{python_path, [ModulePath, HelperPath]}]),
+  CallResult = python:call(R, list_to_atom(ModuleName), rate, [Data]),
   python:stop(R),
-  Result.
+  [{Code, JSONResult}|_] = jsx:decode(CallResult),
+  {binary_to_atom(Code, utf8), JSONResult}.
 
 execute_lua_template(ScriptFile, Data) ->
   ScriptData = file:read_file(ScriptFile),
   {ok, L} = lua:new_state(),
   ok = lual:dostring(L, ScriptData),
-  luam:call(L, "rate", [Data]).
+  CallResult = luam:call(L, "rate", [Data]),
+  [{Code, JSONResult}|_] = jsx:decode(CallResult),
+  {binary_to_atom(Code, utf8), JSONResult}.
