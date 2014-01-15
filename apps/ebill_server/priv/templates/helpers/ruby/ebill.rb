@@ -28,7 +28,7 @@ module EBill
       JSON.generate({:ok => data})
     end
 
-    def error(data)
+    def err(data)
       JSON.generate({:error => data})
     end
   end

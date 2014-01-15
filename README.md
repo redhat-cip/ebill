@@ -230,6 +230,8 @@ Templates are Ruby or Python scripts.
 
 Example :
 
+**Ruby:**
+
 ```ruby
 require 'ebill'
 
@@ -242,6 +244,22 @@ def rate(data)
 
   EBill.ok({:total => amount, :currency => "USD"})
 end
+```
+
+**Python:**
+
+```python
+import ebill
+
+
+def rate(data):
+    ebill.info("Data receive : {0}".format(data))
+
+    json = ebill.to_json(data)
+
+    # do something with data ...
+
+    ebill.ok({"total": amount, "currency": "USD"})
 ```
 
 ### Ruby helpers
@@ -261,7 +279,27 @@ end
 `EBill.ok(x)`
 : Generate a return message from a valide Ruby data structure
 
-`EBill.error(x)`
+`EBill.err(x)`
+: Generate a return message from an error
+
+### Python helpers
+
+`ebill.info(x)`
+: log message `x` with level info
+
+`ebill.error(x)`
+: log message `x` with level error
+
+`ebill.warning(x)`
+: log message `x` with level warning
+
+`ebill.to_json(x)`
+: Parse the JSON string `x` to a Ruby data structure
+
+`ebill.ok(x)`
+: Generate a return message from a valide Ruby data structure
+
+`ebill.err(x)`
 : Generate a return message from an error
 
 ## Authors
