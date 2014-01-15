@@ -12,7 +12,8 @@ list() ->
   [
     {ruby, list_with_ext("rb")},
     {python, list_with_ext("py")},
-    {lua, list_with_ext("lua")}
+%     {lua, list_with_ext("lua")},
+    {javascript, list_with_ext("js")}
   ].
 
 list_with_ext(Ext) ->
@@ -66,7 +67,8 @@ execute(Script, Data) ->
       case ExtWithoutDot of
         "rb" -> execute_ruby_template(ScriptFile, Data);
         "py" -> execute_python_template(ScriptFile, Data);
-        "lua" -> execute_lua_template(ScriptFile, Data);
+%         "lua" -> execute_lua_template(ScriptFile, Data);
+         "js" -> execute_js_template(ScriptFile, Data);
         _ -> {error, unsupported_template}
       end;
     _ -> {error, template_not_found}
@@ -92,10 +94,24 @@ execute_python_template(ScriptFile, Data) ->
   [{Code, JSONResult}|_] = jsx:decode(CallResult),
   {binary_to_atom(Code, utf8), JSONResult}.
 
-execute_lua_template(ScriptFile, Data) ->
-  ScriptData = file:read_file(ScriptFile),
-  {ok, L} = lua:new_state(),
-  ok = lual:dostring(L, ScriptData),
-  CallResult = luam:call(L, "rate", [Data]),
+% execute_lua_template(ScriptFile, Data) ->
+%   {ok, ScriptData} = file:read_file(ScriptFile),
+%   {ok, L} = lua:new_state(),
+%   ok = lual:dostring(L, ScriptData),
+%   CallResult = luam:call(L, "rate", [Data]),
+%   [{Code, JSONResult}|_] = jsx:decode(CallResult),
+%   {binary_to_atom(Code, utf8), JSONResult}.
+
+execute_js_template(ScriptFile, Data) ->
+  {ok, ScriptData} = file:read_file(ScriptFile),
+  ModulePath = filename:dirname(ScriptFile),
+  HelperPath = filename:join([ModulePath, "helpers", "javascript", "ebill.js"]),
+  {ok, HelperData} = file:read_file(HelperPath),
+  application:start(erlang_js),
+  {ok, JS} = js_driver:new(),
+  ok = js:define(JS, HelperData),
+  ok = js:define(JS, ScriptData),
+  {ok, CallResult} = js:call(JS, <<"rate">>, [Data]),
+  application:stop(erlang_js),
   [{Code, JSONResult}|_] = jsx:decode(CallResult),
   {binary_to_atom(Code, utf8), JSONResult}.

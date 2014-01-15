@@ -226,7 +226,7 @@ Example :
 
 ## Templates
 
-Templates are Ruby or Python scripts.
+Templates are Ruby, Python, Javascript <span style="text-decoration: line-through">or Lua</span>(WIP) scripts.
 
 Example :
 
@@ -262,6 +262,22 @@ def rate(data):
     ebill.ok({"total": amount, "currency": "USD"})
 ```
 
+**Javascript:**
+
+```javascript
+function rate(data) {
+  ebill.info("eBill version " + ebill.VERSION);
+  ebill.info("Data : " + data.inspect);
+
+  json = ebill.to_json(data);
+  ebill.info("JSON : " + json);
+
+  rc = ebill.ok({"total": 1023, "detail": ["some", "data"]});
+  ebill.info("result : " + rc);
+  return rc;
+}
+```
+
 ### Ruby helpers
 
 `EBill.info(x)`
@@ -292,6 +308,26 @@ def rate(data):
 
 `ebill.warning(x)`
 : log message `x` with level warning
+
+`ebill.to_json(x)`
+: Parse the JSON string `x` to a Ruby data structure
+
+`ebill.ok(x)`
+: Generate a return message from a valide Ruby data structure
+
+`ebill.err(x)`
+: Generate a return message from an error
+
+### Javascript helpers
+
+`ebill.info(x)`
+: log message `x` with level info (TODO)
+
+`ebill.error(x)`
+: log message `x` with level error (TODO)
+
+`ebill.warning(x)`
+: log message `x` with level warning (TODO)
 
 `ebill.to_json(x)`
 : Parse the JSON string `x` to a Ruby data structure
