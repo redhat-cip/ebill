@@ -1,5 +1,6 @@
 -record(pool, {
     scanning = false,
     node,
-    nodes = []
+    nodes = [],
+    counters = []
 }).

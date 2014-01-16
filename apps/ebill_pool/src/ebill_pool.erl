@@ -7,7 +7,13 @@
 %% API Function Exports
 %% ------------------------------------------------------------------
 
--export([start_link/0, set_nodes/1, get_type/0, get_nodes/1]).
+-export([
+  start_link/0, 
+  set_nodes/1, 
+  get_type/0, 
+  get_nodes/1,
+  call/4
+]).
 
 %% ------------------------------------------------------------------
 %% gen_server Function Exports
@@ -32,6 +38,12 @@ get_type() ->
 get_nodes(Type) ->
   gen_server:call(?MODULE, {get_nodes, Type}).
 
+call(Type, Module, Function, Args) ->
+  try gen_server:call(?MODULE, {call, Type, Module, Function, Args})
+  catch
+    exit:{timeout,_} -> {error, timeout}
+  end.
+
 %% ------------------------------------------------------------------
 %% gen_server Function Definitions
 %% ------------------------------------------------------------------
@@ -41,17 +53,54 @@ init(_Args) ->
   erlang:send_after(1000, self(), trigger),
   {ok, #pool{node = node()}}.
 
-handle_call({set_nodes, Nodes}, _From, State) ->
-  lager:info("nodes = ~p", [Nodes]),
+handle_call({set_nodes, Nodes}, _From, #pool{counters = Counters} = State) ->
+  %% Remove deprecated counters
+  Counters1 = lists:filter(fun({K, _}) ->
+        case lists:keyfind(K, 1, Nodes) of
+          false -> false;
+          _ -> true
+        end
+    end, Counters),
+  %% Add new counters
+  Counters2 = lists:foldl(fun({K, _}, C) ->
+        case lists:keyfind(K, 1, Counters1) of
+          false -> C ++ [{K, 0}];
+          _ -> C
+        end
+    end, Counters1, Nodes),
+
+  lager:info("nodes = ~p / counters = ~p", [Nodes, Counters2]),
   erlang:send_after(10000, self(), trigger),
-  {reply, ok, State#pool{scanning = false, nodes = Nodes}};
+  {reply, ok, State#pool{scanning = false, nodes = Nodes, counters = Counters2}};
 handle_call({get_nodes, Type}, _From, #pool{nodes = Nodes} = State) ->
-  NodesDict = dict:from_list(Nodes),
-  R = case dict:is_key(Type, NodesDict) of
-    true -> dict:fetch(Type, NodesDict);
-    flase -> []
+  R = case lists:keyfind(Type, 1, Nodes) of
+    false -> [];
+    {Type, L} -> L
   end,
   {reply, R, State};
+handle_call({call, Type, Module, Function, Args}, _From, #pool{nodes = Nodes, counters = Counters} = State) ->
+  NodesForType = case lists:keyfind(Type, 1, Nodes) of
+    false -> [];
+    {Type, L} -> L
+  end,
+  Counter = case lists:keyfind(Type, 1, Counters) of
+    false -> 0;
+    {Type, C} -> C
+  end,
+  RRNode = case length(NodesForType) of
+    0 -> error;
+    1 -> [N|_] = NodesForType, N;
+    _ -> lists:nth((Counter rem length(NodesForType)), NodesForType)
+  end,
+  case RRNode of
+    error -> {reply, {error, notfound}, State};
+    Node -> 
+      Counters1 = lists:keyreplace(Type, 1, Counters, {Type, Counter + 1}),
+      case rpc:call(Node, Module, Function, Args) of 
+        {badrpc,nodedown} -> {reply, {error, nodedown}, State#pool{counters = Counters1}};
+        R -> {reply, {ok, R}, State#pool{counters = Counters1}}
+      end
+  end;
 handle_call(_Request, _From, State) ->
   {reply, ok, State}.
 
