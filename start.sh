@@ -59,4 +59,4 @@ if [ $COMPILE = true ] ; then
   ./rebar compile
 fi
 
-erl +pc unicode -pa $PWD/ebin $PWD/apps/ebill_config/ebin $PWD/apps/ebill_$APP/ebin $PWD/deps/*/ebin $NOSHELL -name $NAME -s ebill_$APP
+erl +pc unicode -pa $PWD/ebin $PWD/apps/ebill_config/ebin $PWD/apps/ebill_pool/ebin $PWD/apps/ebill_$APP/ebin $PWD/deps/*/ebin $NOSHELL -config $PWD/apps/ebill_$APP/app.config -name $NAME -setcookie SFEWRG34AFDSGAFG35235 -s ebill_$APP

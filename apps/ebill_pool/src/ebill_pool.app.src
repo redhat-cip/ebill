@@ -1,0 +1,12 @@
+{application, ebill_pool,
+ [
+  {description, ""},
+  {vsn, "1"},
+  {registered, []},
+  {applications, [
+                  kernel,
+                  stdlib
+                 ]},
+  {mod, { ebill_pool_app, []}},
+  {env, []}
+ ]}.
