@@ -37,6 +37,7 @@ get_nodes(Type) ->
 %% ------------------------------------------------------------------
 
 init(_Args) ->
+  erlang:set_cookie(node(), ebill_config:get(cookie)),
   erlang:send_after(1000, self(), trigger),
   {ok, #pool{node = node()}}.
 

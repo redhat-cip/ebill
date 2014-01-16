@@ -5,7 +5,8 @@
   {registered, []},
   {applications, [
                   kernel,
-                  stdlib
+                  stdlib,
+                  ebill_config
                  ]},
   {mod, { ebill_pool_app, []}},
   {env, []}
