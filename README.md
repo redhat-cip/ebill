@@ -2,6 +2,10 @@
 
 A cloud-oriented rating server
 
+## Architecture
+
+![](eBill-Infra.png)
+
 ## Installation
 
 ### Requirements 

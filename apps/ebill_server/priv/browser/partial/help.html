@@ -1,0 +1,387 @@
+<div class="container">
+<h2>Installation</h2>
+
+<h3>Requirements</h3>
+
+<ul>
+  <li><a href="http://www.erlang.org">erlang</a></li>
+  <li><a href="http://couchdb.apache.org">couchdb</a>.</li>
+</ul>
+
+<blockquote>
+  <p><strong>Why CouchDB ?</strong></p>
+
+  <p>Because the mongodb erlang driver is&#8230; not&#8230; hum&#8230;</p>
+</blockquote>
+
+<h3>Configuration</h3>
+
+<h4>.hosts.erlang</h4>
+
+<p>On the server, create a <code>.hosts.erlang</code> in the current directory, or in your
+home directory. The format of the <code>.hosts.erlang</code> file must be one host name
+per line. The host names must be within quotes as shown in the following
+example:</p>
+
+<pre><code>'storage1.example.com'.
+'storage2.example.com'.
+'storage3.example.com'.
+^ (new line)
+</code></pre>
+
+<p>If you plan to start a storage node on the same host as the server, don&#8217;t
+forget to add this host in the list.</p>
+
+<h4>ebill.conf</h4>
+
+<p>The <code>ebill.conf</code> file allow you to configure the server and storage nodes.
+Thus, you can create a <code>ebill.conf</code> file on the server and every storage node.</p>
+
+<p>This file can be placed in <code>/etc/</code>, <code>/Library/Application Support/ebill/</code>,
+<code>~/Library/Application Support/ebill/</code>, <code>~/.ebill</code> and <code>.</code>. If many files
+exist, eBill will read then in this order and update the configuration
+consequently.</p>
+
+<p>You can add comments in a configuration file. A comment start with a <code>#</code>.</p>
+
+<p>A configuration accept the following parameters :</p>
+
+<p>On the server :</p>
+
+<ul>
+  <li><code>tcp_server_port</code> : port used by the server (default : <code>8080</code>)</li>
+  <li><code>max_server_conn</code> : maximum connections accepted by the server (default : <code>100</code>)</li>
+</ul>
+
+<p>On the storage nodes:</p>
+
+<ul>
+  <li><code>tcp_storage_port</code> : port used by the storage (default : <code>8090</code>)</li>
+  <li><code>max_storage_conn</code> : maximum connections accepted by the storage (default : <code>100</code>)</li>
+  <li><code>db_storage_host</code> : the mongodb hostname (default : <code>localhost</code>)</li>
+  <li><code>db_storage_port</code> : the mongodb port (default : <code>27017</code>)</li>
+</ul>
+
+<p>On booth server and storage nodes :</p>
+
+<ul>
+  <li><code>cookie</code> : erlang cookie. <strong>MUST BE IDENTICAL ON ALL NODES !!!</strong></li>
+</ul>
+
+<h3>Start server</h3>
+
+<pre><code>./start.sh server
+</code></pre>
+
+<h3>Start storage</h3>
+
+<pre><code>./start.sh storage
+</code></pre>
+
+<h2>APIs</h2>
+
+<h3>Storage/Metric</h3>
+
+<dl>
+  <dt><code>PUT /metrics</code></dt>
+  <dd>Add metrics in the database</dd>
+</dl>
+
+<p>Fields <code>user_id</code>, <code>resource_id</code> and <code>metrics</code> are required. If no date (field <code>date</code>) is given, the current date will be used.</p>
+
+<p>Data example :</p>
+
+<pre><code>{
+  &quot;user_id&quot;: &quot;EA08CC13-1C54-4044-BB67-B0529CF2E634&quot;,
+  &quot;resource_id&quot;: &quot;FB45D8CF-0FFA-4C15-9A60-4256D997EFF9&quot;,
+  &quot;metrics&quot;: {
+    &quot;cpu.usage&quot;: 80,
+    &quot;mem.usage&quot;: 1024
+  },
+  &quot;date&quot;: &quot;2014-01-13T14:22:27.0&quot;,
+  &quot;metadatas&quot;: {
+    &quot;iaas.name&quot;: &quot;Amazon EC2&quot;,
+    &quot;iaas.tenant.name&quot;: &quot;eNovance&quot;,
+    &quot;iaas.user.name&quot;: &quot;glejeune&quot;
+  }
+}
+</code></pre>
+
+<p>Example :</p>
+
+<pre><code>curl -i -X PUT -H &quot;Content-Type: application/json&quot; http://localhost:8090/metrics -d &quot;{ \
+  \&quot;user_id\&quot;: \&quot;EA08CC13-1C54-4044-BB67-B0529CF2E634\&quot;, \
+  \&quot;resource_id\&quot;: \&quot;FB45D8CF-0FFA-4C15-9A60-4256D997EFF9\&quot;, \
+  \&quot;metrics\&quot;: { \
+    \&quot;cpu.usage\&quot;: 80, \
+    \&quot;mem.usage\&quot;: 1024 \
+  }, \
+  \&quot;date\&quot;: \&quot;2014-01-13T14:22:27.0\&quot;, \
+  \&quot;metadatas\&quot;: { \
+    \&quot;iaas.name\&quot;: \&quot;Amazon EC2\&quot;, \
+    \&quot;iaas.tenant.name\&quot;: \&quot;eNovance\&quot;, \
+    \&quot;iaas.user.name\&quot;: \&quot;glejeune\&quot; \
+  } \
+}&quot;
+&lt; HTTP/1.1 204 No Content
+&lt; connection: keep-alive
+&lt; server: Cowboy
+&lt; date: Mon, 13 Jan 2014 14:16:10 GMT
+&lt; content-length: 0
+&lt; content-type: text/html
+&lt; vary: accept
+</code></pre>
+
+<h3>Server/Billing</h3>
+
+<dl>
+  <dt><code>POST /bill</code></dt>
+  <dd>Get the billing informations</dd>
+</dl>
+
+<p>Only fields <code>user_id</code> and <code>template</code> are required.</p>
+
+<p>Allowed filters operators : <code>==</code>, <code>!=</code>, <code>&lt;=</code>, <code>&gt;=</code>, <code>&lt;</code>, <code>&gt;</code>, <code>=~</code> (assume that the value is a regex), <code>in</code> (assume that the value is a list).</p>
+
+<p>Data example :</p>
+
+<pre><code>{
+  &quot;user_id&quot;: &quot;EA08CC13-1C54-4044-BB67-B0529CF2E634&quot;,
+  &quot;resource_id&quot;: &quot;FB45D8CF-0FFA-4C15-9A60-4256D997EFF9&quot;,
+  &quot;metrics&quot;: [&quot;cpu.usage&quot;, &quot;mem.usage&quot;],
+  &quot;period&quot;: {
+    &quot;from&quot;: &quot;2013-01-06&quot;,
+    &quot;to&quot;: &quot;2013-30-06&quot;
+  },
+  &quot;filters&quot;: [
+    {&quot;iaas.name&quot;, &quot;=~&quot;, &quot;[a|A]mazon.*&quot;},
+    {&quot;iaas.tenant.name&quot;, &quot;==&quot;, &quot;eNovance&quot;}
+  ],
+  &quot;template&quot;: &quot;christmas_billing&quot;
+}
+</code></pre>
+
+<p>Example :</p>
+
+<pre><code>curl -i -X POST -H &quot;Content-Type: application/json&quot; http://localhost:8080/bill -d &quot;{ \
+  \&quot;user_id\&quot;: \&quot;EA08CC13-1C54-4044-BB67-B0529CF2E634\&quot;, \
+  \&quot;period\&quot;: { \
+    \&quot;from\&quot;: \&quot;2013-01-06\&quot;, \
+    \&quot;to\&quot;: \&quot;2013-30-06\&quot; \
+  }, \
+  \&quot;filters\&quot;: [ \
+    {\&quot;iaas.name\&quot;, \&quot;=~\&quot;, \&quot;[a|A]mazon.*\&quot;}, \
+    {\&quot;iaas.tenant.name\&quot;, \&quot;==\&quot;, \&quot;eNovance\&quot;} \
+  ], \
+  \&quot;template\&quot;: \&quot;christmas_billing\&quot; \
+}&quot;
+</code></pre>
+
+<h3>Server/Templates</h3>
+
+<dl>
+  <dt><code>GET /template/:id</code></dt>
+  <dd>
+  <p>Retrieve the template with ID <code>:id</code></p>
+
+<pre><code>curl -i -X GET http://localhost:8080/template/test
+&gt; HTTP/1.1 200 OK
+&gt; connection: keep-alive
+&gt; server: Cowboy
+&gt; date: Mon, 16 Dec 2013 15:56:50 GMT
+&gt; content-length: 26
+&gt; content-type: application/json
+&gt;
+&gt; {&quot;template&quot;:&quot;test&quot;}
+</code></pre></dd>
+
+  <dt><code>HEAD /template/:id</code></dt>
+  <dd>
+  <p>Retrieve the template with ID <code>:id</code></p>
+
+<pre><code>curl -i -X HEAD http://localhost:8080/template/test
+&gt; HTTP/1.1 200 OK
+&gt; connection: keep-alive
+&gt; server: Cowboy
+&gt; date: Mon, 16 Dec 2013 15:56:57 GMT
+&gt; content-length: 0
+&gt; content-type: application/json
+</code></pre></dd>
+
+  <dt><code>GET /template</code></dt>
+  <dd>
+  <p>Return the list of all availables templates</p>
+
+<pre><code>curl -i -X GET http://localhost:8080/template
+&gt; HTTP/1.1 200 OK
+&gt; connection: keep-alive
+&gt; server: Cowboy
+&gt; date: Mon, 16 Dec 2013 15:56:40 GMT
+&gt; content-length: 66
+&gt; content-type: application/json
+&gt;
+&gt; {&quot;ruby&quot;:[&quot;test_ruby&quot;],&quot;python&quot;:[&quot;test_python&quot;],&quot;lua&quot;:[&quot;test_lua&quot;]}
+</code></pre></dd>
+
+  <dt><code>DELETE /template/:id</code></dt>
+  <dd>
+  <p>Remove the template with ID <code>:id</code></p>
+
+<pre><code>curl -i -X DELETE http://localhost:8080/template/test
+&gt; HTTP/1.1 204 No Content
+&gt; connection: keep-alive
+&gt; server: Cowboy
+&gt; date: Mon, 16 Dec 2013 15:56:15 GMT
+&gt; content-length: 0
+&gt; content-type: application/json
+</code></pre></dd>
+
+  <dt><code>POST /template</code></dt>
+  <dd>
+  <p>Add a template</p>
+
+<pre><code>curl -i -F template=@test.rb -X POST http://localhost:8080/template
+&gt; HTTP/1.1 100 Continue
+&gt;
+&gt; HTTP/1.1 200 OK
+&gt; connection: keep-alive
+&gt; server: Cowboy
+&gt; date: Mon, 16 Dec 2013 16:00:24 GMT
+&gt; content-length: 19
+&gt; content-type: application/json
+&gt;
+&gt; {&quot;template&quot;:&quot;info&quot;}
+</code></pre></dd>
+</dl>
+
+<h2>Templates</h2>
+
+<p>Templates are Ruby, Python, Javascript <span style="text-decoration: line-through">or Lua</span>(WIP) scripts.</p>
+
+<p>Example :</p>
+
+<p><strong>Ruby:</strong></p>
+
+<pre><code class="ruby">require 'ebill'
+
+def rate(data)
+  EBill.info(&quot;Data receive : #{data.inspect}&quot;)
+
+  json = EBill.to_json(data)
+
+  # do something with data ...
+
+  EBill.ok({:total =&gt; amount, :currency =&gt; &quot;USD&quot;})
+end
+</code></pre>
+
+<p><strong>Python:</strong></p>
+
+<pre><code class="python">import ebill
+
+
+def rate(data):
+    ebill.info(&quot;Data receive : {0}&quot;.format(data))
+
+    json = ebill.to_json(data)
+
+    # do something with data ...
+
+    ebill.ok({&quot;total&quot;: amount, &quot;currency&quot;: &quot;USD&quot;})
+</code></pre>
+
+<p><strong>Javascript:</strong></p>
+
+<pre><code class="javascript">function rate(data) {
+  ebill.info(&quot;eBill version &quot; + ebill.VERSION);
+  ebill.info(&quot;Data : &quot; + data.inspect);
+
+  json = ebill.to_json(data);
+  ebill.info(&quot;JSON : &quot; + json);
+
+  rc = ebill.ok({&quot;total&quot;: 1023, &quot;detail&quot;: [&quot;some&quot;, &quot;data&quot;]});
+  ebill.info(&quot;result : &quot; + rc);
+  return rc;
+}
+</code></pre>
+
+<h3>Ruby helpers</h3>
+
+<dl>
+  <dt><code>EBill.info(x)</code></dt>
+  <dd>log message <code>x</code> with level info</dd>
+
+  <dt><code>EBill.error(x)</code></dt>
+  <dd>log message <code>x</code> with level error</dd>
+
+  <dt><code>EBill.warning(x)</code></dt>
+  <dd>log message <code>x</code> with level warning</dd>
+
+  <dt><code>EBill.to_json(x)</code></dt>
+  <dd>Parse the JSON string <code>x</code> to a Ruby data structure</dd>
+
+  <dt><code>EBill.ok(x)</code></dt>
+  <dd>Generate a return message from a valide Ruby data structure</dd>
+
+  <dt><code>EBill.err(x)</code></dt>
+  <dd>Generate a return message from an error</dd>
+</dl>
+
+<h3>Python helpers</h3>
+
+<dl>
+  <dt><code>ebill.info(x)</code></dt>
+  <dd>log message <code>x</code> with level info</dd>
+
+  <dt><code>ebill.error(x)</code></dt>
+  <dd>log message <code>x</code> with level error</dd>
+
+  <dt><code>ebill.warning(x)</code></dt>
+  <dd>log message <code>x</code> with level warning</dd>
+
+  <dt><code>ebill.to_json(x)</code></dt>
+  <dd>Parse the JSON string <code>x</code> to a Ruby data structure</dd>
+
+  <dt><code>ebill.ok(x)</code></dt>
+  <dd>Generate a return message from a valide Ruby data structure</dd>
+
+  <dt><code>ebill.err(x)</code></dt>
+  <dd>Generate a return message from an error</dd>
+</dl>
+
+<h3>Javascript helpers</h3>
+
+<dl>
+  <dt><code>ebill.info(x)</code></dt>
+  <dd>log message <code>x</code> with level info (TODO)</dd>
+
+  <dt><code>ebill.error(x)</code></dt>
+  <dd>log message <code>x</code> with level error (TODO)</dd>
+
+  <dt><code>ebill.warning(x)</code></dt>
+  <dd>log message <code>x</code> with level warning (TODO)</dd>
+
+  <dt><code>ebill.to_json(x)</code></dt>
+  <dd>Parse the JSON string <code>x</code> to a Ruby data structure</dd>
+
+  <dt><code>ebill.ok(x)</code></dt>
+  <dd>Generate a return message from a valide Ruby data structure</dd>
+
+  <dt><code>ebill.err(x)</code></dt>
+  <dd>Generate a return message from an error</dd>
+</dl>
+
+<h2>Architecture</h2>
+
+<img src="/browser/img/eBill-Infra.png" alt="" />
+
+<h2>Authors</h2>
+
+<ul>
+  <li>Grégoire Lejeune <a href="mailto:gregoire.lejeune@enovance.com">gregoire.lejeune@enovance.com</a></li>
+</ul>
+
+<h2>Copyright</h2>
+
+<p>Copyright (c) 2013, 2014 eNovance. All rights reserved.</p>
+</div>

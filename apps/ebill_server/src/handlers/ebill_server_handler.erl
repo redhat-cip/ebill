@@ -17,14 +17,8 @@ content_types_provided(Req, State) ->
   ], Req, State}.
 
 ebill_server_html(Req, State) ->
-  Body = <<"
-<html>
-  <body>
-    <h1>eBill Server</h1>
-    <img src='/static/enovance.png' /> 
-  </body>
-</html>
-  ">>,
+  Index = filename:join([code:priv_dir(ebill_server), "browser", "index.html"]),
+  Body = list_to_bitstring(ebill_utils:readlines(Index)),
   {Body, Req, State}.
 
 ebill_server_json(Req, State) ->
@@ -35,3 +29,4 @@ ebill_server_json(Req, State) ->
 }
   ">>,
   {Body, Req, State}.
+

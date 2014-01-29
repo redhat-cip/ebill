@@ -3,7 +3,8 @@
 -export([
     expand_path/1,
     user_home/0,
-    normalize_path/1
+    normalize_path/1,
+    readlines/1
   ]).
 
 expand_path(Path) ->
@@ -48,3 +49,14 @@ get_windows_home(HomeDrive) -> get_windows_home(HomeDrive, os:getenv("HOMEPATH")
 get_windows_home(_, false) -> false;
 get_windows_home(HomeDrive, HomePath) -> HomeDrive ++ HomePath.
 
+readlines(FileName) ->
+  {ok, Device} = file:open(FileName, [read]),
+  try get_all_lines(Device)
+  after file:close(Device)
+  end.
+
+get_all_lines(Device) ->
+  case io:get_line(Device, "") of
+    eof  -> [];
+    Line -> Line ++ get_all_lines(Device)
+  end.

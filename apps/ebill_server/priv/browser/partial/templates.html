@@ -1,0 +1,18 @@
+<div class="container">
+  <h2>Template list</h2>
+  <table class="table table-bordered">
+    <tr ng-repeat="(language, scripts) in templates">
+      <td>{{language}}</td>
+      <td>
+        <ul>
+          <li ng-repeat="script in scripts"><a href="#/templates/{{language}}/{{script}}">{{script}}</a></li>
+        </ul>
+      </td>
+    </tr>
+  </table>
+
+  <div ng-if="language">
+    <h2>{{template}} <small>({{language}})</small></h2>
+    <div hljs source="'{{script}}'"></div>
+  </div>
+</div>

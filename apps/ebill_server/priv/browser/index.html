@@ -1,0 +1,54 @@
+<!doctype html>
+<html lang="en" ng-app="ebillApp">
+  <head>
+    <meta charset="utf-8">
+    <title>eBill</title>
+    <script src="/browser/js/lib/angular.min.js"></script>
+    <script src="/browser/js/lib/angular-route.min.js"></script>
+    <script src="/browser/js/lib/ui-bootstrap-tpls-0.10.0.min.js"></script>
+    <script src="/browser/js/lib/highlight.pack.js"></script>
+    <script src="/browser/js/lib/angular-highlightjs.min.js"></script>
+    <script src="/browser/js/app/app.js"></script>
+    <script src="/browser/js/app/controllers.js"></script>
+
+    <link href="/browser/css/bootstrap.min.css" rel="stylesheet"/>
+    <link href="/browser/css/bootstrap-theme.min.css" rel="stylesheet"/>
+    <link href="/browser/css/ebill.css" rel="stylesheet"/>
+    <link href="/browser/css/highlight/github.css" rel="stylesheet"/>
+  </head>
+
+  <body>
+
+    <div class="navbar navbar-inverse navbar-fixed-top" role="navigation">
+      <div class="container">
+        <div class="navbar-header">
+          <button type="button" class="navbar-toggle" data-toggle="collapse" data-target=".navbar-collapse">
+            <span class="sr-only">Toggle navigation</span>
+            <span class="icon-bar"></span>
+            <span class="icon-bar"></span>
+            <span class="icon-bar"></span>
+          </button>
+          <a class="navbar-brand" href="#/">eBill</a>
+        </div>
+        <div class="collapse navbar-collapse">
+          <ul class="nav navbar-nav">
+            <li ng-class="{active: location.path() == '/templates'}"><a href="#/templates"><span class="glyphicon glyphicon-briefcase"></span> Templates</a></li>
+            <li ng-class="{active: location.path() == '/charging'}"><a href="#/charging"><span class="glyphicon glyphicon-cloud"></span> Charging</a></li>
+            <li ng-class="{active: location.path() == '/help'}"><a href="#/help"><span class="glyphicon glyphicon-question-sign"></span> Help</a></li>
+            <li><a href="" ng-click="about()"><span class="glyphicon glyphicon-info-sign"></span> About</a></li>
+          </ul>
+        </div><!--/.nav-collapse -->
+      </div>
+    </div>
+
+    <div ng-view></div>
+
+    <div class="footer">
+      <div class="container">
+        <p>
+        eBill, &copy; eNovance 2013-2014
+        </p>
+      </div>
+    </div>
+  </body>
+</html>

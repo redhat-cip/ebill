@@ -5,7 +5,9 @@
   exist/1,
   delete/1,
   write/2,
-  execute/2
+  execute/2,
+  get_path/1,
+  get_script_content/1
 ]).
 
 list() ->
@@ -59,10 +61,8 @@ write(Filename, Content) ->
   end.
 
 execute(Script, Data) ->
-  ScriptDir = code:priv_dir(ebill_server),
-  ScriptMatch = filename:join([ScriptDir, "templates", Script ++ ".*"]),
-  case filelib:wildcard(ScriptMatch) of
-    [ScriptFile|_] ->
+  case get_path(Script) of
+    {ok, ScriptFile} ->
       [_|ExtWithoutDot] = string:to_lower(filename:extension(ScriptFile)),
       case ExtWithoutDot of
         "rb" -> execute_ruby_template(ScriptFile, Data);
@@ -72,6 +72,20 @@ execute(Script, Data) ->
         _ -> {error, unsupported_template}
       end;
     _ -> {error, template_not_found}
+  end.
+
+get_path(Script) ->
+  ScriptDir = code:priv_dir(ebill_server),
+  ScriptMatch = filename:join([ScriptDir, "templates", Script ++ ".*"]),
+  case filelib:wildcard(ScriptMatch) of
+    [ScriptFile|_] -> {ok, ScriptFile};
+    _ -> {error, not_found}
+  end.
+
+get_script_content(Script) ->
+  case get_path(Script) of
+    {ok, ScriptFile} -> {ok, ebill_utils:readlines(ScriptFile)};
+    _ -> {errror, template_not_found}
   end.
 
 execute_ruby_template(ScriptFile, Data) ->

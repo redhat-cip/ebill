@@ -29,10 +29,13 @@ routes() ->
   [
     {'_', [
       {"/", ebill_server_handler, []},
-      {"/bill", ebill_bill_handler, []},
+      {"/charging", ebill_bill_handler, []},
       {"/template/:id", ebill_template_handler, []},
       {"/template", ebill_template_handler, []},
       {"/static/[...]", cowboy_static, {priv_dir, ebill_server, "static", [
+        {mimetypes, cow_mimetypes, all}
+      ]}},
+      {"/browser/[...]", cowboy_static, {priv_dir, ebill_server, "browser", [
         {mimetypes, cow_mimetypes, all}
       ]}}
     ]}

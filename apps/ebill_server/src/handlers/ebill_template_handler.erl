@@ -75,7 +75,14 @@ do_get_all(Req, State) ->
   {Body, Req, State}.
 
 do_get_one(Template, Req, State) ->
-  Body = jsx:encode([{template, list_to_binary(Template)}]),
+  TemplateScriptInfo = case ebill_template:get_script_content(Template) of
+    {ok, ScriptContent} -> {script, list_to_binary(ScriptContent)};
+    _ -> {error, <<"Template not found">>}
+  end,
+  Body = jsx:encode([
+    {template, list_to_binary(Template)},
+    TemplateScriptInfo 
+  ]),
   {Body, Req, State}.
 
 % HEAD /template/:id
