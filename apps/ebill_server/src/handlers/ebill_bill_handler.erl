@@ -37,9 +37,25 @@ content_types_provided(Req, State) ->
 
 from_json(Req, State) ->
   {ok, Data, _} = cowboy_req:body(Req),
-  Body = "from_json : " ++ binary_to_list(Data),
-  Req2 = cowboy_req:set_resp_body(Body, Req),
-  {true, Req2, State}.
+  JData = jsx:decode(Data),
+  case lists:keyfind(<<"template">>, 1, JData) of
+    {<<"template">>, Template} -> 
+      case ebill_pool:call(storage, ebill_data, find, [JData]) of
+        {ok, Metrics} ->
+          MData = jsx:encode(Metrics),
+          TResult = ebill_template:execute(binary_to_list(Template), MData),
+          Body = binary_to_list(jsx:encode([TResult])),
+          Req2 = cowboy_req:set_resp_body(Body, Req),
+          {true, Req2, State};
+        {error, _} ->
+          {ok, Req3} = cowboy_req:chunked_reply(503, Req),
+          {halt, Req3, State}
+      end;
+    _ -> 
+      {ok, Req4} = cowboy_req:chunked_reply(400, Req),
+      {halt, Req4, State}
+  end.
+
 
 from_text(Req, State) ->
   {ok, Data, _} = cowboy_req:body(Req),

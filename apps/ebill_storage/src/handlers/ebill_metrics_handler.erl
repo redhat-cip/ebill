@@ -63,9 +63,9 @@ insert_data(JSON, Req) ->
   JSONDict = dict:from_list(JSON),
   case lists:foldl(fun(E, Acc) ->
         Acc and dict:is_key(E, JSONDict)
-      end, true, [<<"user_id">>, <<"resource_id">>, <<"metrics">>]) and is_list(dict:fetch(<<"metrics">>, JSONDict)) of
+      end, true, [<<"project_id">>, <<"resource_id">>, <<"metrics">>]) and is_list(dict:fetch(<<"metrics">>, JSONDict)) of
     true ->
-      ID = dict:fetch(<<"user_id">>, JSONDict),
+      ID = dict:fetch(<<"project_id">>, JSONDict),
       Resource = dict:fetch(<<"resource_id">>, JSONDict),
       Date = case dict:is_key(<<"date">>, JSONDict) of
         true -> dict:fetch(<<"date">>, JSONDict);

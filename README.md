@@ -79,12 +79,12 @@ On booth server and storage nodes :
 `PUT /metrics`
 :  Add metrics in the database
 
-Fields `user_id`, `resource_id` and `metrics` are required. If no date (field `date`) is given, the current date will be used.
+Fields `project_id`, `resource_id` and `metrics` are required. If no date (field `date`) is given, the current date will be used.
 
 Data example :
 
     {
-      "user_id": "EA08CC13-1C54-4044-BB67-B0529CF2E634",
+      "project_id": "EA08CC13-1C54-4044-BB67-B0529CF2E634",
       "resource_id": "FB45D8CF-0FFA-4C15-9A60-4256D997EFF9",
       "metrics": {
         "cpu.usage": 80,
@@ -101,7 +101,7 @@ Data example :
 Example :
 
     curl -i -X PUT -H "Content-Type: application/json" http://localhost:8090/metrics -d "{ \
-      \"user_id\": \"EA08CC13-1C54-4044-BB67-B0529CF2E634\", \
+      \"project_id\": \"EA08CC13-1C54-4044-BB67-B0529CF2E634\", \
       \"resource_id\": \"FB45D8CF-0FFA-4C15-9A60-4256D997EFF9\", \
       \"metrics\": { \
         \"cpu.usage\": 80, \
@@ -124,22 +124,22 @@ Example :
 
 ### Server/Billing
 
-`POST /bill`
+`POST /charging`
 :  Get the billing informations
 
-Only fields `user_id` and `template` are required.
+Only fields `project_id` and `template` are required.
 
 Allowed filters operators : `==`, `!=`, `<=`, `>=`, `<`, `>`, `=~` (assume that the value is a regex), `in` (assume that the value is a list).
 
 Data example :
 
     {
-      "user_id": "EA08CC13-1C54-4044-BB67-B0529CF2E634",
+      "project_id": "EA08CC13-1C54-4044-BB67-B0529CF2E634",
       "resource_id": "FB45D8CF-0FFA-4C15-9A60-4256D997EFF9",
       "metrics": ["cpu.usage", "mem.usage"],
       "period": {
-        "from": "2013-01-06",
-        "to": "2013-30-06"
+        "start_date": "2013-01-06",
+        "end_date": "2013-30-06"
       },
       "filters": [
         {"iaas.name", "=~", "[a|A]mazon.*"},
@@ -150,11 +150,11 @@ Data example :
 
 Example :
 
-    curl -i -X POST -H "Content-Type: application/json" http://localhost:8080/bill -d "{ \
-      \"user_id\": \"EA08CC13-1C54-4044-BB67-B0529CF2E634\", \
+    curl -i -X POST -H "Content-Type: application/json" http://localhost:8080/charging -d "{ \
+      \"project_id\": \"EA08CC13-1C54-4044-BB67-B0529CF2E634\", \
       \"period\": { \
-        \"from\": \"2013-01-06\", \
-        \"to\": \"2013-30-06\" \
+        \"start_date\": \"2013-01-06\", \
+        \"end_date\": \"2013-30-06\" \
       }, \
       \"filters\": [ \
         {\"iaas.name\", \"=~\", \"[a|A]mazon.*\"}, \

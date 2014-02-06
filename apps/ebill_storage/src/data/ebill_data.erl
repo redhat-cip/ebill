@@ -11,6 +11,8 @@
   add/6,
   del/1,
   metric_list/0,
+  find/1,
+  find_by/2,
   find_by_metric/2,
   find_by_resource/2,
   find_by_resource_and_metric/3,
@@ -47,6 +49,32 @@ add(ID, Resource, Metric, Value, Metadatas, Date)
 
 del(Doc) ->
   gen_server:call(?SERVER, {del, Doc}).
+
+find_by(ID, Datas) ->
+  lager:info("find_by ---> ~p", [Datas]),
+  V0 = 0,
+  {V1, Resource} = case lists:keyfind(resource, 1, Datas) of
+    {resource, R} -> {V0+1, R};
+    false -> {V0, undefined}
+  end,
+  {V2, Metric} = case lists:keyfind(metric, 1, Datas) of
+    {metric, M} -> {V1+2, M};
+    false -> {V1, undefined}
+  end,
+  {V3, DateInterval} = case lists:keyfind(dates, 1, Datas) of
+    {dates, D} -> {V2+4, D};
+    false -> {V2, undefined}
+  end,
+  case V3 of
+    1 -> find_by_resource(ID, Resource);
+    2 -> find_by_metric(ID, Metric);
+    3 -> find_by_resource_and_metric(ID, Resource, Metric);
+    4 -> find_by_date(ID, DateInterval);
+    5 -> find_by_resource_and_date(ID, Resource, DateInterval);
+    6 -> find_by_metric_and_date(ID, Metric, DateInterval);
+    7 -> find_by_resource_metric_and_date(ID, Resource, Metric, DateInterval);
+    _ -> {error, invalid}
+  end.
 
 find_by_metric(ID, Metric) when is_atom(Metric) ->
   gen_server:call(?SERVER, {do_map_reduce, "find_by_metric", [{options, [{key, [ID, Metric]}]}]}).
@@ -113,8 +141,8 @@ handle_call({count}, _From, Config) ->
 handle_call({add, ID, Resource, Metric, Value, Metadatas, Date}, _From, Config) ->
   #ebilldb{ database = Database } = Config,
   Doc = {[
-    {<<"billing_id">>, ID},
-    {<<"resource">>, Resource},
+    {<<"project_id">>, ID},
+    {<<"resource_id">>, Resource},
     {<<"metadatas">>, Metadatas},
     {<<"metric">>, Metric},
     {<<"value">>, Value},
@@ -127,6 +155,7 @@ handle_call({del, Doc}, _From, Config) ->
   Result = couchbeam:delete_doc(Database, Doc),
   {reply, Result, Config};
 handle_call({do_map_reduce, ViewName, Options}, _From, Config) ->
+  lager:info("do_map_reduce -----> ~p", [Options]),
   #ebilldb{ database = Database } = Config,
   OptionsDict = dict:from_list(Options),
   OptionsDict1 = case dict:is_key(options, OptionsDict) of
@@ -137,7 +166,7 @@ handle_call({do_map_reduce, ViewName, Options}, _From, Config) ->
     true -> lists:map(
         dict:fetch(extract, OptionsDict1),
         do_map_reduce_view(Database, ViewName, dict:fetch(options, OptionsDict1))
-        );
+      );
     false -> do_map_reduce_view(Database, ViewName, dict:fetch(options, OptionsDict1))
   end,
   {reply, Result, Config};
@@ -176,31 +205,31 @@ create_views(Database) ->
     {<<"views">>,
        {[{<<"find_by_resource_metric_and_date">>,
          {[{<<"map">>,
-           <<"function (doc) {\n if (doc.billing_id && doc.resource && doc.metric && doc.date) {\n emit([doc.billing_id, doc.resource, doc.metric, doc.date], doc);\n}\n}">>
+           <<"function (doc) {\n if (doc.project_id && doc.resource_id && doc.metric && doc.date) {\n emit([doc.project_id, doc.resource_id, doc.metric, doc.date], doc);\n}\n}">>
          }]}
        },{<<"find_by_resource_and_date">>,
          {[{<<"map">>,
-           <<"function (doc) {\n if (doc.billing_id && doc.resource && doc.date) {\n emit([doc.billing_id, doc.resource, doc.date], doc);\n}\n}">>
+           <<"function (doc) {\n if (doc.project_id && doc.resource_id && doc.date) {\n emit([doc.project_id, doc.resource_id, doc.date], doc);\n}\n}">>
          }]}
        },{<<"find_by_metric_and_date">>,
          {[{<<"map">>,
-           <<"function (doc) {\n if (doc.billing_id && doc.metric && doc.date) {\n emit([doc.billing_id, doc.metric, doc.date], doc);\n}\n}">>
+           <<"function (doc) {\n if (doc.project_id && doc.metric && doc.date) {\n emit([doc.project_id, doc.metric, doc.date], doc);\n}\n}">>
          }]}
        },{<<"find_by_date">>,
          {[{<<"map">>,
-           <<"function (doc) {\n if (doc.billing_id && doc.date) {\n emit([doc.billing_id, doc.date], doc);\n}\n}">>
+           <<"function (doc) {\n if (doc.project_id && doc.date) {\n emit([doc.project_id, doc.date], doc);\n}\n}">>
          }]}
        },{<<"find_by_resource">>,
          {[{<<"map">>,
-           <<"function (doc) {\n if (doc.billing_id && doc.resource) {\n emit([doc.billing_id, doc.resource], doc);\n}\n}">>
+           <<"function (doc) {\n if (doc.project_id && doc.resource_id) {\n emit([doc.project_id, doc.resource_id], doc);\n}\n}">>
          }]}
        },{<<"find_by_metric">>,
          {[{<<"map">>,
-           <<"function (doc) {\n if (doc.billing_id && doc.metric) {\n emit([doc.billing_id, doc.metric], doc);\n}\n}">>
+           <<"function (doc) {\n if (doc.project_id && doc.metric) {\n emit([doc.project_id, doc.metric], doc);\n}\n}">>
          }]}
        },{<<"find_by_resource_and_metric">>,
          {[{<<"map">>,
-           <<"function (doc) {\n if (doc.billing_id && doc.resource && doc.metric) {\n emit([doc.billing_id, doc.resource, doc.metric], doc);\n}\n}">>
+           <<"function (doc) {\n if (doc.project_id && doc.resource_id && doc.metric) {\n emit([doc.project_id, doc.resource_id, doc.metric], doc);\n}\n}">>
          }]}
        },{<<"metric_list">>,
          {[{<<"map">>,
@@ -216,12 +245,25 @@ create_views(Database) ->
   {ok, Database}.
 
 do_map_reduce_view(Database, View, Options) ->
-  {ok, Result} = couchbeam_view:fetch(
+  Result = couchbeam_view:fetch(
       Database,
       {"ebill", View},
       Options
   ),
-  Result.
+  case Result of
+    {ok, []} -> [];
+    {ok, Data} -> 
+      lists:foldl(fun({E}, Acc) ->
+            case lists:keyfind(<<"value">>, 1, E) of
+              {<<"value">>, {V}} -> 
+                V1 = lists:keydelete(<<"_id">>, 1, V),
+                V2 = lists:keydelete(<<"_rev">>, 1, V1),
+                Acc ++ [V2];
+              _ -> Acc
+            end
+        end, [], Data);
+    _ -> []
+  end.
 
 do_date_interval(FixedTablePart, DateInterval) ->
   DIDict = ec_dict:from_list(DateInterval),
@@ -236,4 +278,29 @@ do_date_interval(FixedTablePart, DateInterval) ->
     _ -> list_to_bitstring(ec_date:format("Y-m-d\\TH:i:s",calendar:now_to_local_time(now())))
   end,
   {FixedTablePart ++ [StartDate], FixedTablePart ++ [EndDate]}.
+
+find(Query) ->
+  ID = case lists:keyfind(<<"project_id">>, 1, Query) of 
+    {<<"project_id">>, I} -> I;
+    _ -> <<"">>
+  end,
+  Datas = [],
+  Datas1 = case lists:keyfind(<<"resource_id">>, 1, Query) of
+    {<<"resource_id">>, R} -> Datas ++ [{resource, R}];
+    _ -> Datas
+  end,
+  Datas2 = case lists:keyfind(<<"period">>, 1, Query) of
+    {<<"period">>, P} -> Datas1 ++ [{dates, lists:map(fun({K, V}) -> {binary_to_atom(K, utf8), V} end, P)}];
+    _ -> Datas1
+  end,
+  UnFilteredDatas = case lists:keyfind(<<"metrics">>, 1, Query) of
+    {<<"metrics">>, MM} when is_list(MM) -> 
+      lists:foldl(fun(M, Acc) ->
+            Acc ++ find_by(ID, Datas2 ++ [{metric, binary_to_atom(M, utf8)}])
+        end, [], MM);
+    {<<"metrics">>, M} when is_atom(M) -> find_by(ID, Datas2 ++ [{metric, binary_to_atom(M, utf8)}]);
+    _ -> find_by(ID, Datas2)
+  end,
+  %% TODO filter
+  UnFilteredDatas.
 
