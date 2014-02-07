@@ -11,6 +11,7 @@
   add/6,
   del/1,
   metric_list/0,
+  metric_list/1,
   find/1,
   find_by/2,
   find_by_metric/2,
@@ -77,35 +78,46 @@ find_by(ID, Datas) ->
   end.
 
 find_by_metric(ID, Metric) when is_atom(Metric) ->
-  gen_server:call(?SERVER, {do_map_reduce, "find_by_metric", [{options, [{key, [ID, Metric]}]}]}).
+  gen_server:call(?SERVER, {parse_map_reduce, "find_by_metric", [{options, [{key, [ID, Metric]}]}]}).
 
 find_by_resource(ID, Resource) when is_bitstring(Resource) ->
-  gen_server:call(?SERVER, {do_map_reduce, "find_by_resource", [{options, [{key, [ID, Resource]}]}]}).
+  gen_server:call(?SERVER, {parse_map_reduce, "find_by_resource", [{options, [{key, [ID, Resource]}]}]}).
 
 find_by_resource_and_metric(ID, Resource, Metric) when is_bitstring(Resource), is_atom(Metric) ->
-  gen_server:call(?SERVER, {do_map_reduce, "find_by_resource_and_metric", [{options, [{key, [ID, Resource, Metric]}]}]}).
+  gen_server:call(?SERVER, {parse_map_reduce, "find_by_resource_and_metric", [{options, [{key, [ID, Resource, Metric]}]}]}).
 
 % DateInterval = [{start_date, StartDate}, {end_date, EndDate}]
 find_by_date(ID, DateInterval) ->
   {Start, End} = do_date_interval([ID], DateInterval),
-  gen_server:call(?SERVER, {do_map_reduce, "find_by_date", [{options, [{startkey, Start}, {endkey, End}]}]}).
+  gen_server:call(?SERVER, {parse_map_reduce, "find_by_date", [{options, [{startkey, Start}, {endkey, End}]}]}).
 
 find_by_metric_and_date(ID, Metric, DateInterval) ->
   {Start, End} = do_date_interval([ID, Metric], DateInterval),
-  gen_server:call(?SERVER, {do_map_reduce, "find_by_metric_and_date", [{options, [{startkey, Start}, {endkey, End}]}]}).
+  gen_server:call(?SERVER, {parse_map_reduce, "find_by_metric_and_date", [{options, [{startkey, Start}, {endkey, End}]}]}).
 
 find_by_resource_and_date(ID, Resource, DateInterval) ->
   {Start, End} = do_date_interval([ID, Resource], DateInterval),
-  gen_server:call(?SERVER, {do_map_reduce, "find_by_resource_and_date", [{options, [{startkey, Start}, {endkey, End}]}]}).
+  gen_server:call(?SERVER, {parse_map_reduce, "find_by_resource_and_date", [{options, [{startkey, Start}, {endkey, End}]}]}).
 
 find_by_resource_metric_and_date(ID, Resource, Metric, DateInterval) ->
   {Start, End} = do_date_interval([ID, Resource, Metric], DateInterval),
-  gen_server:call(?SERVER, {do_map_reduce, "find_by_resource_metric_and_date", [{options, [{startkey, Start}, {endkey, End}]}]}).
+  gen_server:call(?SERVER, {parse_map_reduce, "find_by_resource_metric_and_date", [{options, [{startkey, Start}, {endkey, End}]}]}).
 
 metric_list() ->
-  gen_server:call(?SERVER, {do_map_reduce, "metric_list", [{options, [reduce, group]}, {extract, fun({E}) -> 
-              {ok, V} = dict:find(<<"key">>, dict:from_list(E)), 
-              binary_to_atom(V, utf8)
+  gen_server:call(?SERVER, {unparse_map_result, "metric_list", [{options, [reduce, group]}, {extract, fun({E}, Acc) -> 
+              {<<"key">>, K} = lists:keyfind(<<"key">>, 1, E),
+              Acc ++ [binary_to_atom(K, utf8)]
+          end}]}).
+
+metric_list(ID) ->
+  gen_server:call(?SERVER, {unparse_map_result, "metric_list_for_id", [{options, [reduce, group]}, {extract, fun({E}, Acc) ->
+              {<<"key">>, K} = lists:keyfind(<<"key">>, 1, E),
+              case lists:member(ID, K) of
+                true ->
+                  [M|_] = lists:delete(ID, K),
+                  Acc ++ [binary_to_atom(M, utf8)];
+                _ -> Acc
+              end
           end}]}).
 
 % server
@@ -154,21 +166,11 @@ handle_call({del, Doc}, _From, Config) ->
   #ebilldb{ database = Database } = Config,
   Result = couchbeam:delete_doc(Database, Doc),
   {reply, Result, Config};
-handle_call({do_map_reduce, ViewName, Options}, _From, Config) ->
-  lager:info("do_map_reduce -----> ~p", [Options]),
-  #ebilldb{ database = Database } = Config,
-  OptionsDict = dict:from_list(Options),
-  OptionsDict1 = case dict:is_key(options, OptionsDict) of
-    true -> OptionsDict;
-    false -> dict:append(options, [], OptionsDict)
-  end,
-  Result = case dict:is_key(extract, OptionsDict1) of
-    true -> lists:map(
-        dict:fetch(extract, OptionsDict1),
-        do_map_reduce_view(Database, ViewName, dict:fetch(options, OptionsDict1))
-      );
-    false -> do_map_reduce_view(Database, ViewName, dict:fetch(options, OptionsDict1))
-  end,
+handle_call({unparse_map_result, ViewName, Options}, _From, Config) ->
+  Result = do_map_reduce(ViewName, Options, Config),
+  {reply, Result, Config};
+handle_call({parse_map_reduce, ViewName, Options}, _From, Config) ->
+  Result = do_parse_map_reduce(do_map_reduce(ViewName, Options, Config)),
   {reply, Result, Config};
 handle_call(_Message, _From, Config) ->
   {reply, error, Config}.
@@ -231,25 +233,47 @@ create_views(Database) ->
          {[{<<"map">>,
            <<"function (doc) {\n if (doc.project_id && doc.resource_id && doc.metric) {\n emit([doc.project_id, doc.resource_id, doc.metric], doc);\n}\n}">>
          }]}
+       },{<<"metric_list_for_id">>,
+         {[{<<"map">>,
+           <<"function (doc) {\n if (doc.project_id && doc.metric) {\n emit([doc.project_id, doc.metric], null);\n}\n}">>
+         }, {<<"reduce">>,
+           <<"function (key, values, rereduce) {\n return null;\n }">>
+         }]}
        },{<<"metric_list">>,
          {[{<<"map">>,
            <<"function (doc) {\n if (doc.metric) {\n emit(doc.metric, null);\n}\n}">>
-           }, 
-           {<<"reduce">>,
+         }, {<<"reduce">>,
            <<"function (key, values, rereduce) {\n return null;\n }">>
-           }]}
+         }]}
        }]}
     }
   ]},
   {ok, _DesignDoc1} = couchbeam:save_doc(Database, Views),
   {ok, Database}.
 
-do_map_reduce_view(Database, View, Options) ->
-  Result = couchbeam_view:fetch(
-      Database,
-      {"ebill", View},
-      Options
-  ),
+do_map_reduce(ViewName, Options, Config) ->
+  #ebilldb{ database = Database } = Config,
+  OptionsDict = dict:from_list(Options),
+  OptionsDict1 = case dict:is_key(options, OptionsDict) of
+    true -> OptionsDict;
+    false -> dict:append(options, [], OptionsDict)
+  end,
+  case dict:is_key(extract, OptionsDict1) of
+    true -> do_extract_map_reduce(
+          dict:fetch(extract, OptionsDict1),
+          couchbeam_view:fetch(Database, {"ebill", ViewName}, dict:fetch(options, OptionsDict1))
+        );
+    false -> couchbeam_view:fetch(Database, {"ebill", ViewName}, dict:fetch(options, OptionsDict1))
+  end.
+
+do_extract_map_reduce(Fun, Result) ->
+  case Result of
+    {ok, []} -> [];
+    {ok, Data} -> lists:foldl(Fun, [], Data);
+    _ -> []
+  end.
+
+do_parse_map_reduce(Result) ->
   case Result of
     {ok, []} -> [];
     {ok, Data} -> 
