@@ -1,8 +1,10 @@
 var ebillApp = angular.module('ebillApp', [
     'ui.bootstrap',
     'ngRoute',
-    'ebillControllers',
-    'hljs'
+    'hljs',
+    'angularBootstrapNavTree',
+    'ngAnimate',
+    'ebillControllers'
 ]).run(function($rootScope, $location, $http, $modal) {
   if($location.path() == '') { $location.path('/'); }
   $rootScope.location = $location;

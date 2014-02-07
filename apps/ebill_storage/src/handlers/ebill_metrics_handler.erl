@@ -22,8 +22,8 @@ allowed_methods(Req, State) ->
 
 content_types_accepted(Req, State) -> 
   {[
-      {<<"application/json">>, from_json},
-      {<<"text/plain">>, from_text}
+      {{<<"application">>, <<"json">>, '*'}, from_json},
+      {{<<"text">>, <<"plain">>, '*'}, from_text}
   ], Req, State}.
 
 accept_event_body(Req, State) ->
@@ -31,8 +31,8 @@ accept_event_body(Req, State) ->
 
 content_types_provided(Req, State) ->
   {[
-      {<<"text/html">>, to_html},
-      {<<"application/json">>, to_json}
+      {{<<"text">>, <<"html">>, '*'}, to_html},
+      {{<<"application">>, <<"json">>, '*'}, to_json}
   ], Req, State}.
 
 from_json(Req, State) ->
@@ -79,7 +79,6 @@ insert_data(JSON, Req) ->
             Metric1 = binary_to_atom(Metric, utf8),
             ebill_data:add(ID, Resource, Metric1, Value, Metadatas, Date)
         end, dict:fetch(<<"metrics">>, JSONDict)),
-      lager:info("JSON = ~p", [JSON]),
       Body = "from_json : " ++ bitstring_to_list(jsx:encode(JSON)),
       cowboy_req:set_resp_body(Body, Req);
     false ->

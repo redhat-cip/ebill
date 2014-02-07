@@ -1,18 +1,21 @@
 <div class="container">
   <h2>Template list</h2>
-  <table class="table table-bordered">
-    <tr ng-repeat="(language, scripts) in templates">
-      <td>{{language}}</td>
-      <td>
-        <ul>
-          <li ng-repeat="script in scripts"><a href="#/templates/{{language}}/{{script}}">{{script}}</a></li>
-        </ul>
-      </td>
-    </tr>
-  </table>
-
-  <div ng-if="language">
-    <h2>{{template}} <small>({{language}})</small></h2>
-    <div hljs source="'{{script}}'"></div>
+  <div class="row">
+    <div class="col-md-3">
+      <h3>Template</h3>
+      <abn-tree 
+      tree-data = "templates" 
+      icon-leaf = "glyphicon glyphicon-file" 
+      icon-expand = "glyphicon glyphicon-plus"
+      icon-collapse = "glyphicon glyphicon-minus"
+      on-select = "my_tree_handler(branch)" 
+      expand-level = "1"></abn-tree>
+    </div>
+    <div class="col-md-9">
+      <div ng-if="template">
+        <h2>{{template}}</h2>
+        <div hljs source="show_highlight()"></div>
+      </div>
+    </div>
   </div>
 </div>

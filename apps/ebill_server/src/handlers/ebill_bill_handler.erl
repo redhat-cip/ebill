@@ -22,8 +22,8 @@ allowed_methods(Req, State) ->
 
 content_types_accepted(Req, State) -> 
   {[
-      {<<"application/json">>, from_json},
-      {<<"text/plain">>, from_text}
+      {{<<"application">>, <<"json">>, '*'}, from_json},
+      {{<<"text">>, <<"plain">>, '*'}, from_text}
   ], Req, State}.
 
 accept_event_body(Req, State) ->
@@ -31,8 +31,8 @@ accept_event_body(Req, State) ->
 
 content_types_provided(Req, State) ->
   {[
-      {<<"text/html">>, to_html},
-      {<<"application/json">>, to_json}
+      {{<<"text">>, <<"html">>, '*'}, to_html},
+      {{<<"application">>, <<"json">>, '*'}, to_json}
   ], Req, State}.
 
 from_json(Req, State) ->

@@ -12,8 +12,8 @@ init(_Transport, _Req, []) ->
 
 content_types_provided(Req, State) ->
   {[
-      {<<"text/html">>, ebill_storage_html},
-      {<<"application/json">>, ebill_storage_json}
+      {{<<"text">>, <<"html">>, '*'}, ebill_storage_html},
+      {{<<"application">>, <<"json">>, '*'}, ebill_storage_json}
   ], Req, State}.
 
 ebill_storage_html(Req, State) ->

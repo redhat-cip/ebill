@@ -14,6 +14,7 @@
   metric_list/1,
   find/1,
   find_by/2,
+  find_by_id/1,
   find_by_metric/2,
   find_by_resource/2,
   find_by_resource_and_metric/3,
@@ -52,7 +53,6 @@ del(Doc) ->
   gen_server:call(?SERVER, {del, Doc}).
 
 find_by(ID, Datas) ->
-  lager:info("find_by ---> ~p", [Datas]),
   V0 = 0,
   {V1, Resource} = case lists:keyfind(resource, 1, Datas) of
     {resource, R} -> {V0+1, R};
@@ -67,6 +67,7 @@ find_by(ID, Datas) ->
     false -> {V2, undefined}
   end,
   case V3 of
+    0 -> find_by_id(ID);
     1 -> find_by_resource(ID, Resource);
     2 -> find_by_metric(ID, Metric);
     3 -> find_by_resource_and_metric(ID, Resource, Metric);
@@ -76,6 +77,9 @@ find_by(ID, Datas) ->
     7 -> find_by_resource_metric_and_date(ID, Resource, Metric, DateInterval);
     _ -> {error, invalid}
   end.
+
+find_by_id(ID) ->
+  gen_server:call(?SERVER, {parse_map_reduce, "find_by_id", [{options, [{key, ID}]}]}).
 
 find_by_metric(ID, Metric) when is_atom(Metric) ->
   gen_server:call(?SERVER, {parse_map_reduce, "find_by_metric", [{options, [{key, [ID, Metric]}]}]}).
@@ -228,6 +232,10 @@ create_views(Database) ->
        },{<<"find_by_metric">>,
          {[{<<"map">>,
            <<"function (doc) {\n if (doc.project_id && doc.metric) {\n emit([doc.project_id, doc.metric], doc);\n}\n}">>
+         }]}
+       },{<<"find_by_ID">>,
+         {[{<<"map">>,
+           <<"function (doc) {\n if (doc.project_id) {\n emit(doc.project_id, doc);\n}\n}">>
          }]}
        },{<<"find_by_resource_and_metric">>,
          {[{<<"map">>,

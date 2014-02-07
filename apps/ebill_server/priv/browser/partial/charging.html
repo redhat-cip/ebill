@@ -1,3 +1,47 @@
 <div class="container">
-{{name}}
+  <h2>Charging</h2>
+  <div class="row">
+    <div class="col-md-3">
+      <h3>Template</h3>
+      <abn-tree 
+      tree-data = "templates" 
+      icon-leaf = "glyphicon glyphicon-file" 
+      icon-expand = "glyphicon glyphicon-plus"
+      icon-collapse = "glyphicon glyphicon-minus"
+      on-select = "my_tree_handler(branch)" 
+      expand-level = "1"></abn-tree>
+    </div>
+    <div class="col-md-3">
+      <div class="form-group">
+        <p class="input-group">
+          <label>Project ID</label>
+          <input class="form-control" placeholder="Project ID" ng-model="project_id">
+        </p>
+        <p class="input-group">
+          <label>Ressource ID</label>
+          <input class="form-control" placeholder="Ressource ID" ng-model="ressource_id">
+        </p>
+        <p class="input-group">
+          <label>Start Date</label>
+          <input class="form-control" placeholder="Start Date" ng-model="start_date">
+        </p>
+        <p class="input-group">
+          <label>End Date</label>
+          <input class="form-control" placeholder="End Date" ng-model="end_date">
+        </p>
+        <p class="input-group">
+          <label>Metrics</label>
+          <input class="form-control" placeholder="metrics" ng-model="metrics">
+        </p>
+        <button class="btn btn-primary" ng-click="execute(project_id, ressource_id, start_date, end_date, metrics)">Execute</button>
+      </div>
+    </div>
+    <div class="col-md-6">
+      <alert ng-repeat="alert in alerts" type="alert.type" close="closeAlert($index)">{{alert.msg}}</alert>
+      <div ng-if="result">
+        {{result}}
+        <div hljs source="show_result()"></div>
+      </div>
+    </div>
+  </div>
 </div>
