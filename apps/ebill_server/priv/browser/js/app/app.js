@@ -3,6 +3,7 @@ var ebillApp = angular.module('ebillApp', [
     'ngRoute',
     'hljs',
     'angularBootstrapNavTree',
+    'glDate',
     'ngAnimate',
     'ebillControllers'
 ]).run(function($rootScope, $location, $http, $modal) {

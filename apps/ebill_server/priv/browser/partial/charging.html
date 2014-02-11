@@ -13,23 +13,32 @@
     </div>
     <div class="col-md-3">
       <div class="form-group">
-        <p class="input-group">
+        <p ng-class="{'has-error': project_id == undefined || project_id == ''}" class="input-group has-feedback" style="width: 100%;">
           <label>Project ID</label>
           <input class="form-control" placeholder="Project ID" ng-model="project_id">
+          <span class="glyphicon glyphicon-remove form-control-feedback" ng-if="project_id == undefined || project_id == ''"></span>
         </p>
-        <p class="input-group">
+        <p class="input-group" style="width: 100%;">
           <label>Ressource ID</label>
           <input class="form-control" placeholder="Ressource ID" ng-model="ressource_id">
         </p>
-        <p class="input-group">
-          <label>Start Date</label>
-          <input class="form-control" placeholder="Start Date" ng-model="start_date">
+
+        <label>Start Date </label>
+        <p class="input-group" style="width: 100%;">
+          <input type="text" class="form-control" datepicker-popup="dd-MM-yyyy" ng-model="start_date" is-open="start_date_opened" datepicker-options="dateOptions" close-text="Fermer" show-weeks="false" show-button-bar="false"/>
+          <span class="input-group-btn">
+            <button class="btn btn-default" ng-click="open_start_date($event)"><i class="glyphicon glyphicon-calendar"></i></button>
+          </span>
         </p>
-        <p class="input-group">
-          <label>End Date</label>
-          <input class="form-control" placeholder="End Date" ng-model="end_date">
+        <label>End Date</label>
+        <p class="input-group" style="width: 100%;">
+        <input type="text" class="form-control" datepicker-popup="dd-MM-yyyy" ng-model="end_date" is-open="end_date_opened" min="__random_name_hsdf_68nj_j89G_lq45_cfd8" date-after="start_date" add-date-after="{months: 1}" datepicker-options="dateOptions" close-text="Fermer" show-weeks="false" show-button-bar="false"/>
+          <span class="input-group-btn">
+            <button class="btn btn-default" ng-click="open_end_date($event)"><i class="glyphicon glyphicon-calendar"></i></button>
+          </span>
         </p>
-        <p class="input-group">
+
+        <p class="input-group" style="width: 100%;">
           <label>Metrics</label>
           <input class="form-control" placeholder="metrics" ng-model="metrics">
         </p>
@@ -39,7 +48,6 @@
     <div class="col-md-6">
       <alert ng-repeat="alert in alerts" type="alert.type" close="closeAlert($index)">{{alert.msg}}</alert>
       <div ng-if="result">
-        {{result}}
         <div hljs source="show_result()"></div>
       </div>
     </div>

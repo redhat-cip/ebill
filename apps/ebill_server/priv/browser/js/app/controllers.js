@@ -42,13 +42,33 @@ ebillControllers.controller('ChargingCtrl', function ($scope, $http, $routeParam
     })
   };
 
+  $scope.open_start_date = function($event) {
+    $event.preventDefault();
+    $event.stopPropagation();
+
+    $scope.start_date_opened = true;
+  };
+  $scope.open_end_date = function($event) {
+    $event.preventDefault();
+    $event.stopPropagation();
+
+    $scope.end_date_opened = true;
+  };
+  $scope.dateOptions = {
+    'year-format': "'yy'",
+    'starting-day': 1
+  };
+
   $scope.execute = function(project_id, ressource_id, start_date, end_date, metrics) {
     $scope.alerts= [];
+    $scope.result = "";
     if($scope.template == undefined) {
       $scope.alerts.push({type: 'danger', msg: "You must choose a template"});
+      return;
     }
     if(project_id == undefined || project_id == "") {
       $scope.alerts.push({type: 'danger', msg: "You must enter a Project ID"});
+      return;
     }
      
     request = {"project_id": project_id, "template": $scope.template};
@@ -57,16 +77,14 @@ ebillControllers.controller('ChargingCtrl', function ($scope, $http, $routeParam
     }
     period = {};
     if(start_date != undefined && start_date != "") {
-      period["start_date"] = start_date
+      period["start_date"] = start_date.$format("%Y-%m-%d");
     }
     if(end_date != undefined && end_date != "") {
-      period["end_date"] = end_date
+      period["end_date"] = end_date.$format("%Y-%m-%d");
     }
     if(!isEmpty(period)) {
       request["period"] = period
     }
-
-    console.log(request);
 
     $http({
       url: '/charging',
@@ -76,7 +94,7 @@ ebillControllers.controller('ChargingCtrl', function ($scope, $http, $routeParam
     }).success(function(data, status, headers, config) {
       $scope.result = data;
     }).error(function(data, status, headers, config) {
-      $scope.alerts = [{type: 'danger', msg: "Server error #" + status}];
+      $scope.alerts.push({type: 'danger', msg: "Server error #" + status});
     });
   };
 
