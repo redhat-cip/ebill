@@ -1,0 +1,27 @@
+digraph {
+  rankdir=LR;
+  remincross=true;
+  node[shape=box];
+  couchbeam -> hackney;
+  couchbeam -> jsx;
+  couchbeam -> oauth;
+  cowboy -> cowlib;
+  cowboy -> ranch;
+  missing_deps_for_cowlib[shape=point];
+  cowlib -> missing_deps_for_cowlib;
+  ebill -> couchbeam;
+  ebill -> cowboy;
+  ebill -> erlang_js;
+  ebill -> erlport;
+  ebill -> erlware_commons;
+  ebill -> jsx;
+  ebill -> lager;
+  erlware_commons -> rebar_vsn_plugin;
+  hackney -> hackney_lib;
+  hackney_lib -> idna;
+  missing_deps_for_idna[shape=point];
+  idna -> missing_deps_for_idna;
+  lager -> goldrush;
+  missing_deps_for_ranch[shape=point];
+  ranch -> missing_deps_for_ranch;
+}

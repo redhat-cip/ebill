@@ -5,6 +5,7 @@
 
 -export([
   start_link/0,
+  db_url/0,
   count/0,
   add/4,
   add/5,
@@ -37,6 +38,11 @@
 start_link() ->
   couchbeam:start(),
   gen_server:start_link({local, ?SERVER}, ?MODULE, [], []).
+
+db_url() ->
+  DBHost = ebill_config:get(db_storage_host),
+  DBPort = ebill_config:get(db_storage_port),
+  "http://" ++ DBHost ++ ":" ++ integer_to_list(DBPort).
 
 count() ->
   gen_server:call(?SERVER, {count}).
@@ -182,9 +188,7 @@ handle_call(_Message, _From, Config) ->
 % private
 
 init_connection() ->
-  DBHost = ebill_config:get(db_storage_host),
-  DBPort = ebill_config:get(db_storage_port),
-  Connection = couchbeam:server_connection("http://" ++ DBHost ++ ":" ++ integer_to_list(DBPort), []),
+  Connection = couchbeam:server_connection(db_url(), []),
   DBName = ebill_config:get(db_storage_name),
   {ok, Database} = case couchbeam:db_exists(Connection, DBName) of
     true -> couchbeam:open_db(Connection, DBName);

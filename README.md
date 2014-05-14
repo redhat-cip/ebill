@@ -8,7 +8,7 @@ A cloud-oriented rating server
 
 ## Installation
 
-### Requirements 
+### Requirements
 
 * [erlang](http://www.erlang.org)
 * [couchdb](http://couchdb.apache.org).
@@ -17,13 +17,15 @@ A cloud-oriented rating server
 >
 > Because the mongodb erlang driver is... not... hum...
 
+![](ebill-dependencies.gv.png)
+
 ### Configuration
 
 #### .hosts.erlang
 
-On the server, create a `.hosts.erlang` in the current directory, or in your 
-home directory. The format of the `.hosts.erlang` file must be one host name 
-per line. The host names must be within quotes as shown in the following 
+On the server, create a `.hosts.erlang` in the current directory, or in your
+home directory. The format of the `.hosts.erlang` file must be one host name
+per line. The host names must be within quotes as shown in the following
 example:
 
     'storage1.example.com'.
@@ -36,12 +38,12 @@ forget to add this host in the list.
 
 #### ebill.conf
 
-The `ebill.conf` file allow you to configure the server and storage nodes. 
+The `ebill.conf` file allow you to configure the server and storage nodes.
 Thus, you can create a `ebill.conf` file on the server and every storage node.
 
 This file can be placed in `/etc/`, `/Library/Application Support/ebill/`,
-`~/Library/Application Support/ebill/`, `~/.ebill` and `.`. If many files 
-exist, eBill will read then in this order and update the configuration 
+`~/Library/Application Support/ebill/`, `~/.ebill` and `.`. If many files
+exist, eBill will read then in this order and update the configuration
 consequently.
 
 You can add comments in a configuration file. A comment start with a `#`.
@@ -57,12 +59,13 @@ On the storage nodes:
 
 * `tcp_storage_port` : port used by the storage (default : `8090`)
 * `max_storage_conn` : maximum connections accepted by the storage (default : `100`)
-* `db_storage_host` : the mongodb hostname (default : `localhost`)
-* `db_storage_port` : the mongodb port (default : `27017`)
+* `db_storage_host` : the couchdb hostname (default : `localhost`)
+* `db_storage_port` : the couchdb port (default : `5984`)
+* `db_storage_name` : the couchdb database name (default : `ebill`)
 
 On booth server and storage nodes :
 
-* `cookie` : erlang cookie. **MUST BE IDENTICAL ON ALL NODES !!!** 
+* `cookie` : erlang cookie. **MUST BE IDENTICAL ON ALL NODES !!!**
 
 ### Start server
 
@@ -71,6 +74,12 @@ On booth server and storage nodes :
 ### Start storage
 
     ./start.sh storage
+
+## Interfaces
+
+To access the eBill interface, open `http://<server>:<tcp_server_port>/` in your browser.
+
+To access the couchdb interface, open `http://<storage>:<tcp_storage_port>/` in your browser. You can also use the _Database_ menu in the eBill interface.
 
 ## APIs
 
@@ -243,7 +252,7 @@ def rate(data)
   EBill.info("Data receive : #{data.inspect}")
 
   json = EBill.to_json(data)
-  
+
   # do something with data ...
 
   EBill.ok({:total => amount, :currency => "USD"})

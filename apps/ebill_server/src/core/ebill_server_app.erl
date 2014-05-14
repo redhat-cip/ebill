@@ -29,6 +29,7 @@ routes() ->
   [
     {'_', [
       {"/", ebill_server_handler, []},
+      {"/db", ebill_redirect_db_handler, []},
       {"/charging", ebill_bill_handler, []},
       {"/template/:id", ebill_template_handler, []},
       {"/template", ebill_template_handler, []},
@@ -40,4 +41,3 @@ routes() ->
       ]}}
     ]}
   ].
-

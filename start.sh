@@ -15,7 +15,7 @@ help() {
   if [ "x$MESSAGE" != "x" ] ; then
     echo $MESSAGE
   fi
-  echo "Usage : start.sh [options] server|storage|poller"
+  echo "Usage : start.sh [options] server|storage"
   echo ""
   echo "Options :"
   echo "  -c --console     : Run in console mode"
@@ -27,11 +27,11 @@ help() {
 
 while (( "$#" )); do
   case $1 in
-    -c|--console) 
+    -c|--console)
       NOSHELL="" ;;
-    -C|--compile) 
+    -C|--compile)
       COMPILE=true ;;
-    -K|--clean) 
+    -K|--clean)
       CLEAN=true ; COMPILE=true ;;
     -n|--name)
       shift ; NAME=$1 ;;

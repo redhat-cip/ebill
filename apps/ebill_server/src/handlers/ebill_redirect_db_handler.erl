@@ -1,4 +1,4 @@
--module(ebill_storage_handler).
+-module(ebill_redirect_db_handler).
 
 -export([init/3]).
 -export([handle/2]).
@@ -8,7 +8,10 @@ init(_Transport, Req, []) ->
 	{ok, Req, undefined}.
 
 handle(Req, State) ->
-  URL = ebill_data:db_url() ++ "/_utils",
+  URL = case ebill_pool:call(storage, ebill_data, db_url, []) of
+    {ok, DBUrl} -> DBUrl ++ "/_utils";
+    {error, _} -> "/"
+  end,
   {ok, Reply} = cowboy_req:reply(
     302,
     [{<<"Location">>, list_to_binary(URL)}],
@@ -19,4 +22,3 @@ handle(Req, State) ->
 
 terminate(_Reason, _Req, _State) ->
 	ok.
-

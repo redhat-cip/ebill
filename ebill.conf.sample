@@ -1,0 +1,19 @@
+## ebill.conf sample
+
+## Common options
+
+#cookie=CH4NG3M3PL34S3
+
+## Server configuration
+
+#tcp_server_port=8080
+#max_server_conn=100
+
+## Storage configuration
+
+#tcp_storage_port=8090
+#max_storage_conn=100
+
+#db_storage_host=localhost
+#db_storage_port=5984
+#db_storage_name=ebill
