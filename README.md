@@ -67,13 +67,17 @@ On booth server and storage nodes :
 
 * `cookie` : erlang cookie. **MUST BE IDENTICAL ON ALL NODES !!!**
 
-### Start server
+## Start 
 
-    ./start.sh server
+**server** :
 
-### Start storage
+    ./ebill --app server start
 
-    ./start.sh storage
+**storage**
+
+    ./ebill --app storage start
+
+See `ebill -h` for more options.
 
 ## Interfaces
 

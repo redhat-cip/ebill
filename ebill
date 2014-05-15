@@ -1,0 +1,127 @@
+#!/bin/sh
+
+OPTS=$*
+
+RUNNER_SCRIPT_DIR=$(cd ${0%/*} && pwd)
+NOSHELL="-noshell -detached"
+DAEMON=true
+COMPILE=false
+CLEAN=false
+APP=""
+NAME=""
+ACTION=""
+
+help() {
+  MESSAGE=$1
+  if [ "x$MESSAGE" != "x" ] ; then
+    echo $MESSAGE
+  fi
+  echo "Usage : start.sh [options] -a server|storage {start|stop|console|status}"
+  echo ""
+  echo "Options :"
+  echo "  -a --app server|storage : App to manage"
+  echo "  -c --console            : Run in console mode"
+  echo "  -C --compile            : Compile code before run"
+  echo "  -K --clean              : Clean and compile code before run"
+  echo "  -n --name [name]        : Set node name"
+  echo "  -h --help               : Display this message"
+}
+
+get_pid() {
+  if [ $DAEMON = true ] ; then
+    PID=`ps aux | grep -v grep | grep $NAME | grep beam | awk '{print $2}'`
+    echo $PID > $PIDFILE
+  fi
+}
+
+print_status() {
+  case $STARTED in
+    true)
+      echo "$APP is running (PID $PID)" ;;
+    *)
+      echo "$APP is not running" ;;
+  esac
+}
+
+stop_app() {
+  if [ $STARTED = true ] ; then
+    kill -9 $PID 2>/dev/null
+    rm -f $PIDFILE
+  else
+    echo "$APP is not started"
+  fi
+}
+
+start_app() {
+  if [ $STARTED = true ] ; then
+    echo "$APP is already running (PID $PID)"
+  else
+    erl +pc unicode -pa $PWD/ebin $PWD/apps/ebill_config/ebin $PWD/apps/ebill_pool/ebin $PWD/apps/ebill_$APP/ebin $PWD/deps/*/ebin $NOSHELL -config $PWD/apps/ebill_$APP/app.config -name $NAME -s ebill_$APP
+  fi
+}
+
+while (( "$#" )); do
+  case $1 in
+    start)
+      ACTION="start" ;;
+    stop)
+      ACTION="stop" ;;
+    console)
+      NOSHELL="" ; DAEMON=false ; ACTION="console" ;;
+    status)
+      ACTION="status" ;;
+    -c|--console)
+      NOSHELL="" ;;
+    -C|--compile)
+      COMPILE=true ;;
+    -K|--clean)
+      CLEAN=true ; COMPILE=true ;;
+    -n|--name)
+      shift ; NAME=$1 ;;
+    -h|--help)
+      help ; exit 0 ;;
+    -a|--app)
+      shift ; APP=$1 ;;
+    *)
+      help "Invalid option $1" ; exit 1 ;;
+  esac
+  shift
+done
+
+if [ "x$APP" = "x" ] ; then
+  help "Wrong app. I don't know what to start!"
+  exit 1
+fi
+
+PIDFILE=$RUNNER_SCRIPT_DIR"/."$APP".pid"
+STARTED=false
+PID=""
+if [ -f $PIDFILE ] ; then
+  STARTED=true
+  PID=`cat $PIDFILE | head -1`
+fi
+
+if [ "x$NAME" = "x" ] ; then
+  NAME=${APP}_$(uuidgen)
+fi
+
+if [ $CLEAN = true ] ; then
+  ./rebar clean
+fi
+if [ $COMPILE = true ] ; then
+  ./rebar compile
+fi
+
+case $ACTION in
+  start)
+    start_app ; get_pid ;;
+  stop)
+    stop_app ;;
+  console)
+    start_app ;;
+  status)
+    print_status ;;
+  *)
+    help ;;
+esac
+
