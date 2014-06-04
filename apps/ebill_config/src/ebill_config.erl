@@ -139,7 +139,7 @@ read_config_file(ConfFile, Config) ->
                   max_storage_conn ->
                     Acc#ebillconfig{max_storage_conn = list_to_integer(Value2)};
                   cookie ->
-                    Acc#ebillconfig{cookie = list_to_binary(Value2)};
+                    Acc#ebillconfig{cookie = list_to_atom(Value2)};
                   db_storage_host ->
                     Acc#ebillconfig{db_storage_host = Value2};
                   db_storage_port ->
