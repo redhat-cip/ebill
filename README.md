@@ -176,6 +176,51 @@ Example :
       \"template\": \"christmas_billing\" \
     }"
 
+`POST /cost`
+:  Get cost
+
+Data example :
+
+    {
+      "resource_ids": ["lb", "app", "db"],
+        "groups": {
+          "lb": {"min": 1, "max": 2},
+          "app": {"min": 2,"max": 10},
+          "db": {"min": 1,"max": 1}
+        },
+        "metrics": {
+          "unit": "second",
+          "monitor": {
+            "lb": {"cpu.usage": 20},
+            "app": {"cpu.usage": 20},
+            "db": {"cpu.usage": 20}
+          }
+        },
+        "template": "openstack_deployment_cost",
+        "period": {"unit": "day", "duration": 30}
+    }
+
+Example :
+
+    curl -i -X POST -H "Content-Type: application/json" http://localhost:8080/cost -d "{ \
+      \"resource_ids\": [\"lb\", \"app\", \"db\"], \
+      \"groups\": { \
+        \"lb\": {\"min\": 1, \"max\": 2, \"flavor\": \"m1.micro\", \"os\": \"unix\"}, \
+        \"app\": {\"min\": 2,\"max\": 10, \"flavor\": \"m3.medium\"}, \
+        \"db\": {\"min\": 1,\"max\": 1, \"os\": \"rhel\"} \
+      }, \
+      \"metrics\": { \
+        \"unit\": \"s\", \
+        \"monitor\": { \
+          \"lb\": {\"cpu.usage\": 20, \"network.incoming.bytes\": 10}, \
+          \"app\": {\"cpu.usage\": 20}, \
+          \"db\": {\"cpu.usage\": 20} \
+        } \
+      }, \
+      \"template\": \"openstack_deployment_cost\", \
+      \"period\": {\"unit\": \"d\", \"duration\": 30} \
+    }"
+
 ### Server/Templates
 
 `GET /template/:id`

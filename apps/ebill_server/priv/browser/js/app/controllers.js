@@ -71,9 +71,9 @@ ebillControllers.controller('ChargingCtrl', function ($scope, $http, $routeParam
       return;
     }
      
-    request = {"project_id": project_id, "template": $scope.template};
+    $scope.request = {"project_id": project_id, "template": $scope.template};
     if(ressource_id != undefined && ressource_id != "") {
-      request["resource_id"] = ressource_id
+      $scope.request["resource_id"] = ressource_id
     }
     period = {};
     if(start_date != undefined && start_date != "") {
@@ -83,13 +83,17 @@ ebillControllers.controller('ChargingCtrl', function ($scope, $http, $routeParam
       period["end_date"] = end_date.$format("%Y-%m-%d");
     }
     if(!isEmpty(period)) {
-      request["period"] = period
+      $scope.request["period"] = period
+    }
+    if(!isEmpty(metrics)) {
+      var reg = new RegExp("[ ,;]+", "g");
+      $scope.request["metrics"] = metrics.split(reg);
     }
 
     $http({
       url: '/charging',
       method: "POST",
-      data: request,
+      data: $scope.request,
       headers: {'Content-Type': 'application/json'}
     }).success(function(data, status, headers, config) {
       $scope.result = data;
@@ -104,7 +108,28 @@ ebillControllers.controller('ChargingCtrl', function ($scope, $http, $routeParam
 
   $scope.show_result = function() {
     return JSON.stringify($scope.result, null, 2);
+  };
+
+  $scope.show_request = function() {
+    return JSON.stringify($scope.request, null, 2);
   }
+});
+ebillControllers.controller('DeployCtrl', function ($scope, $http, $routeParams, $parse) {
+  $scope.templates = [];
+  $http.get('/template').success(function (data, status, headers, config) {
+    if(status == 200) {
+      for(language in data) {
+        $scope.templates.push({label: language, children: data[language]});
+      }
+    }
+  });
+
+  $scope.my_tree_handler = function(branch) { 
+    $http.get('/template/' + branch.label, {cache: false}).success(function (data, status, headers, config) {
+      $scope.template = data.template;
+      $scope.script = data.script; 
+    });
+  };
 });
 ebillControllers.controller('HelpCtrl', function ($scope, $http, $routeParams) {
   $scope.title = "Help";

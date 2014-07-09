@@ -37,6 +37,10 @@ ebillApp.config(['$routeProvider',
       templateUrl: '/browser/partial/charging.html',
       controller: 'ChargingCtrl'
     }).
+    when('/deploy', {
+      templateUrl: '/browser/partial/deploy.html',
+      controller: 'DeployCtrl'
+    }).
     when('/help', {
       templateUrl: '/browser/partial/help.html',
       controller: 'HelpCtrl'

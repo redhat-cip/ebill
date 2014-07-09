@@ -6,6 +6,7 @@
   delete/1,
   write/2,
   execute/2,
+  execute/3,
   get_path/1,
   get_script_content/1
 ]).
@@ -61,14 +62,16 @@ write(Filename, Content) ->
   end.
 
 execute(Script, Data) ->
+  execute(Script, rate, Data).
+execute(Script, Fun, Data) ->
   case get_path(Script) of
     {ok, ScriptFile} ->
       [_|ExtWithoutDot] = string:to_lower(filename:extension(ScriptFile)),
       case ExtWithoutDot of
-        "rb" -> execute_ruby_template(ScriptFile, Data);
-        "py" -> execute_python_template(ScriptFile, Data);
-%         "lua" -> execute_lua_template(ScriptFile, Data);
-         "js" -> execute_js_template(ScriptFile, Data);
+        "rb" -> execute_ruby_template(ScriptFile, Fun, Data);
+        "py" -> execute_python_template(ScriptFile, Fun, Data);
+%         "lua" -> execute_lua_template(ScriptFile, Fun, Data);
+        "js" -> execute_js_template(ScriptFile, Fun, Data);
         _ -> {error, unsupported_template}
       end;
     _ -> {error, template_not_found}
@@ -88,35 +91,35 @@ get_script_content(Script) ->
     _ -> {errror, template_not_found}
   end.
 
-execute_ruby_template(ScriptFile, Data) ->
+execute_ruby_template(ScriptFile, Fun, Data) ->
   ModulePath = filename:dirname(ScriptFile),
   HelperPath = filename:join([ModulePath, "helpers", "ruby"]),
   ModuleName = filename:basename(ScriptFile, ".rb"),
   {ok, R} = ruby:start([{ruby_lib, [ModulePath, HelperPath]}]),
-  CallResult = ruby:call(R, list_to_atom(ModuleName), rate, [Data]),
+  CallResult = ruby:call(R, list_to_atom(ModuleName), Fun, [Data]),
   ruby:stop(R),
   [{Code, JSONResult}|_] = jsx:decode(CallResult),
   {binary_to_atom(Code, utf8), JSONResult}.
 
-execute_python_template(ScriptFile, Data) ->
+execute_python_template(ScriptFile, Fun, Data) ->
   ModulePath = filename:dirname(ScriptFile),
   HelperPath = filename:join([ModulePath, "helpers", "python"]),
   ModuleName = filename:basename(ScriptFile, ".py"),
   {ok, R} = python:start([{python_path, [ModulePath, HelperPath]}]),
-  CallResult = python:call(R, list_to_atom(ModuleName), rate, [Data]),
+  CallResult = python:call(R, list_to_atom(ModuleName), Fun, [Data]),
   python:stop(R),
   [{Code, JSONResult}|_] = jsx:decode(CallResult),
   {binary_to_atom(Code, utf8), JSONResult}.
 
-% execute_lua_template(ScriptFile, Data) ->
+% execute_lua_template(ScriptFile, Fun, Data) ->
 %   {ok, ScriptData} = file:read_file(ScriptFile),
 %   {ok, L} = lua:new_state(),
 %   ok = lual:dostring(L, ScriptData),
-%   CallResult = luam:call(L, "rate", [Data]),
+%   CallResult = luam:call(L, atom_to_list(Fun), [Data]),
 %   [{Code, JSONResult}|_] = jsx:decode(CallResult),
 %   {binary_to_atom(Code, utf8), JSONResult}.
 
-execute_js_template(ScriptFile, Data) ->
+execute_js_template(ScriptFile, Fun, Data) ->
   {ok, ScriptData} = file:read_file(ScriptFile),
   ModulePath = filename:dirname(ScriptFile),
   HelperPath = filename:join([ModulePath, "helpers", "javascript", "ebill.js"]),
@@ -125,7 +128,7 @@ execute_js_template(ScriptFile, Data) ->
   {ok, JS} = js_driver:new(),
   ok = js:define(JS, HelperData),
   ok = js:define(JS, ScriptData),
-  {ok, CallResult} = js:call(JS, <<"rate">>, [Data]),
+  {ok, CallResult} = js:call(JS, atom_to_binary(Fun, utf8), [Data]),
   application:stop(erlang_js),
   [{Code, JSONResult}|_] = jsx:decode(CallResult),
   {binary_to_atom(Code, utf8), JSONResult}.
