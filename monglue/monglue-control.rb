@@ -28,16 +28,13 @@ db = 'ocwbill'
 vmsid = redis.lrange(db,'0','-1').join(',')
 #vmsid = ['ae80d47e-bf70-43ff-be06-2fe623e0485b']
 
-$monit_uri = URI("http://10.197.180.205:9998/proactive-watch/metric")
-$project_id = 'ea08cc13-1c54-4044-bb67-b0529cf2e634'
-
 def get_metric(vmid, key)
-  req = Net::HTTP::Get.new($monit_uri)
-  req['resource'] = vmid
-  req['key'] = key
-  res = Net::HTTP.start($monit_uri.hostname, $monit_uri.port) { |h|
-    h.request(req)
-  }
+  port = 9998
+  host = '10.197.180.205'
+  path = '/proactive-watch/metric'
+
+  req = Net::HTTP::Get.new(path, {'resource' => vmid, 'key' => key})
+  res = Net::HTTP.new(host, port).start {|http| http.request(req)}
   code = res.code.to_i
   if (code >= 200 && code < 300) then
     return res.body
@@ -58,9 +55,10 @@ end
 # le service de monitoring ne supporte actuellement pas la demande de plusieurs metriques
 # dans un meme GET, le retour est un plain-text avec la valeur
 vmsid.each do |vmid|
+  project_id = 'ea08cc13-1c54-4044-bb67-b0529cf2e634'
   # 2/ on demande les metriques en question au service de billing
   data = {
-    'project_id' => $project_id,
+    'project_id' => project_id,
     'resource_id' => vmid,
     'metrics' => {
       'cpu.usage' => get_metric(vmid, 'cpu.usage'),
