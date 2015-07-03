@@ -21,11 +21,11 @@ end
 nbdata=ARGV[0].to_i || 1000
 
 uuids = {}
-10.times do 
+10.times do
   uuid = SecureRandom.uuid
   uuids[uuid] = []
 
-  5.times do 
+  5.times do
     uuids[uuid] << SecureRandom.uuid
   end
 end
@@ -56,4 +56,3 @@ nbdata.times do
 
   put_data data.to_json
 end
-
