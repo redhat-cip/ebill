@@ -25,7 +25,7 @@ require 'net/http'
 # 1/ on récupère la liste des id a monitorer
 redis = Redis.new
 db = 'ocwbill'
-vmsid = redis.lrange(db,'0','-1').join(',')
+vmsid = redis.lrange(db,'0','-1')
 #vmsid = ['ae80d47e-bf70-43ff-be06-2fe623e0485b']
 
 def get_metric(vmid, key)
