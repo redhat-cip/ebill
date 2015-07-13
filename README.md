@@ -261,7 +261,7 @@ curl -i -X POST -H "Content-Type: application/json" http://localhost:8080/cost -
         > content-type: application/json
 
 `GET /template`
-:  Return the list of all availables templates
+:  Return the list of all available templates
 
         curl -i -X GET http://localhost:8080/template
         > HTTP/1.1 200 OK
@@ -368,7 +368,7 @@ function rate(data) {
 : Parse the JSON string `x` to a Ruby data structure
 
 `EBill.ok(x)`
-: Generate a return message from a valide Ruby data structure
+: Generate a return message from a valid Ruby data structure
 
 `EBill.err(x)`
 : Generate a return message from an error
@@ -388,7 +388,7 @@ function rate(data) {
 : Parse the JSON string `x` to a Ruby data structure
 
 `ebill.ok(x)`
-: Generate a return message from a valide Ruby data structure
+: Generate a return message from a valid Ruby data structure
 
 `ebill.err(x)`
 : Generate a return message from an error
@@ -408,7 +408,7 @@ function rate(data) {
 : Parse the JSON string `x` to a Ruby data structure
 
 `ebill.ok(x)`
-: Generate a return message from a valide Ruby data structure
+: Generate a return message from a valid Ruby data structure
 
 `ebill.err(x)`
 : Generate a return message from an error
@@ -419,4 +419,4 @@ function rate(data) {
 
 ## Copyright
 
-Copyright (c) 2013, 2014 eNovance.  All rights reserved.
+Copyright (c) 2013-2015 eNovance.  All rights reserved.
