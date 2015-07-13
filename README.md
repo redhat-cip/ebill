@@ -96,37 +96,42 @@ Fields `project_id`, `resource_id` and `metrics` are required. If no date (field
 
 Data example :
 
-    {
-      "project_id": "EA08CC13-1C54-4044-BB67-B0529CF2E634",
-      "resource_id": "FB45D8CF-0FFA-4C15-9A60-4256D997EFF9",
-      "metrics": {
-        "cpu.usage": 80,
-        "mem.usage": 1024
-      },
-      "date": "2014-01-13T14:22:27.0",
-      "metadatas": {
-        "iaas.name": "Amazon EC2",
-        "iaas.tenant.name": "eNovance",
-        "iaas.user.name": "glejeune"
-      }
-    }
+```json
+{
+  "project_id": "EA08CC13-1C54-4044-BB67-B0529CF2E634",
+  "resource_id": "FB45D8CF-0FFA-4C15-9A60-4256D997EFF9",
+  "metrics": {
+    "cpu.usage": 80,
+    "mem.usage": 1024
+  },
+  "date": "2014-01-13T14:22:27.0",
+  "metadatas": {
+    "iaas.name": "Amazon EC2",
+    "iaas.tenant.name": "eNovance",
+    "iaas.user.name": "glejeune"
+  }
+}
+```
 
 Example :
 
-    curl -i -X PUT -H "Content-Type: application/json" http://localhost:8090/metrics -d "{ \
-      \"project_id\": \"EA08CC13-1C54-4044-BB67-B0529CF2E634\", \
-      \"resource_id\": \"FB45D8CF-0FFA-4C15-9A60-4256D997EFF9\", \
-      \"metrics\": { \
-        \"cpu.usage\": 80, \
-        \"mem.usage\": 1024 \
-      }, \
-      \"date\": \"2014-01-13T14:22:27.0\", \
-      \"metadatas\": { \
-        \"iaas.name\": \"Amazon EC2\", \
-        \"iaas.tenant.name\": \"eNovance\", \
-        \"iaas.user.name\": \"glejeune\" \
-      } \
-    }"
+```bash
+curl -i -X PUT -H "Content-Type: application/json" http://localhost:8090/metrics -d "{ \
+  \"project_id\": \"EA08CC13-1C54-4044-BB67-B0529CF2E634\", \
+  \"resource_id\": \"FB45D8CF-0FFA-4C15-9A60-4256D997EFF9\", \
+  \"metrics\": { \
+    \"cpu.usage\": 80, \
+    \"mem.usage\": 1024 \
+  }, \
+  \"date\": \"2014-01-13T14:22:27.0\", \
+  \"metadatas\": { \
+    \"iaas.name\": \"Amazon EC2\", \
+    \"iaas.tenant.name\": \"eNovance\", \
+    \"iaas.user.name\": \"glejeune\" \
+  } \
+}"
+```
+
     < HTTP/1.1 204 No Content
     < connection: keep-alive
     < server: Cowboy
@@ -146,80 +151,88 @@ Allowed filters operators : `==`, `!=`, `<=`, `>=`, `<`, `>`, `=~` (assume that 
 
 Data example :
 
-    {
-      "project_id": "EA08CC13-1C54-4044-BB67-B0529CF2E634",
-      "resource_id": "FB45D8CF-0FFA-4C15-9A60-4256D997EFF9",
-      "metrics": ["cpu.usage", "mem.usage"],
-      "period": {
-        "start_date": "2013-01-06",
-        "end_date": "2013-30-06"
-      },
-      "filters": [
-        {"iaas.name", "=~", "[a|A]mazon.*"},
-        {"iaas.tenant.name", "==", "eNovance"}
-      ],
-      "template": "christmas_billing"
-    }
+```json
+{
+  "project_id": "EA08CC13-1C54-4044-BB67-B0529CF2E634",
+  "resource_id": "FB45D8CF-0FFA-4C15-9A60-4256D997EFF9",
+  "metrics": ["cpu.usage", "mem.usage"],
+  "period": {
+    "start_date": "2013-01-06",
+    "end_date": "2013-30-06"
+  },
+  "filters": [
+    {"iaas.name", "=~", "[a|A]mazon.*"},
+    {"iaas.tenant.name", "==", "eNovance"}
+  ],
+  "template": "christmas_billing"
+}
+```
 
 Example :
 
-    curl -i -X POST -H "Content-Type: application/json" http://localhost:8080/charging -d "{ \
-      \"project_id\": \"EA08CC13-1C54-4044-BB67-B0529CF2E634\", \
-      \"period\": { \
-        \"start_date\": \"2013-01-06\", \
-        \"end_date\": \"2013-30-06\" \
-      }, \
-      \"filters\": [ \
-        {\"iaas.name\", \"=~\", \"[a|A]mazon.*\"}, \
-        {\"iaas.tenant.name\", \"==\", \"eNovance\"} \
-      ], \
-      \"template\": \"christmas_billing\" \
-    }"
+```bash
+curl -i -X POST -H "Content-Type: application/json" http://localhost:8080/charging -d "{ \
+  \"project_id\": \"EA08CC13-1C54-4044-BB67-B0529CF2E634\", \
+  \"period\": { \
+    \"start_date\": \"2013-01-06\", \
+    \"end_date\": \"2013-30-06\" \
+  }, \
+  \"filters\": [ \
+    {\"iaas.name\", \"=~\", \"[a|A]mazon.*\"}, \
+    {\"iaas.tenant.name\", \"==\", \"eNovance\"} \
+  ], \
+  \"template\": \"christmas_billing\" \
+}"
+```
 
 `POST /cost`
 :  Get cost
 
 Data example :
 
-    {
-      "resource_ids": ["lb", "app", "db"],
-        "groups": {
-          "lb": {"min": 1, "max": 2},
-          "app": {"min": 2,"max": 10},
-          "db": {"min": 1,"max": 1}
-        },
-        "metrics": {
-          "unit": "second",
-          "monitor": {
-            "lb": {"cpu.usage": 20},
-            "app": {"cpu.usage": 20},
-            "db": {"cpu.usage": 20}
-          }
-        },
-        "template": "openstack_deployment_cost",
-        "period": {"unit": "day", "duration": 30}
-    }
+```json
+{
+  "resource_ids": ["lb", "app", "db"],
+    "groups": {
+      "lb": {"min": 1, "max": 2},
+      "app": {"min": 2,"max": 10},
+      "db": {"min": 1,"max": 1}
+    },
+    "metrics": {
+      "unit": "second",
+      "monitor": {
+        "lb": {"cpu.usage": 20},
+        "app": {"cpu.usage": 20},
+        "db": {"cpu.usage": 20}
+      }
+    },
+    "template": "openstack_deployment_cost",
+    "period": {"unit": "day", "duration": 30}
+}
+```
 
 Example :
 
-    curl -i -X POST -H "Content-Type: application/json" http://localhost:8080/cost -d "{ \
-      \"resource_ids\": [\"lb\", \"app\", \"db\"], \
-      \"groups\": { \
-        \"lb\": {\"min\": 1, \"max\": 2, \"flavor\": \"m1.micro\", \"os\": \"unix\"}, \
-        \"app\": {\"min\": 2,\"max\": 10, \"flavor\": \"m3.medium\"}, \
-        \"db\": {\"min\": 1,\"max\": 1, \"os\": \"rhel\"} \
-      }, \
-      \"metrics\": { \
-        \"unit\": \"s\", \
-        \"monitor\": { \
-          \"lb\": {\"cpu.usage\": 20, \"network.incoming.bytes\": 10}, \
-          \"app\": {\"cpu.usage\": 20}, \
-          \"db\": {\"cpu.usage\": 20} \
-        } \
-      }, \
-      \"template\": \"openstack_deployment_cost\", \
-      \"period\": {\"unit\": \"d\", \"duration\": 30} \
-    }"
+```bash
+curl -i -X POST -H "Content-Type: application/json" http://localhost:8080/cost -d "{ \
+  \"resource_ids\": [\"lb\", \"app\", \"db\"], \
+  \"groups\": { \
+    \"lb\": {\"min\": 1, \"max\": 2, \"flavor\": \"m1.micro\", \"os\": \"unix\"}, \
+    \"app\": {\"min\": 2,\"max\": 10, \"flavor\": \"m3.medium\"}, \
+    \"db\": {\"min\": 1,\"max\": 1, \"os\": \"rhel\"} \
+  }, \
+  \"metrics\": { \
+    \"unit\": \"s\", \
+    \"monitor\": { \
+      \"lb\": {\"cpu.usage\": 20, \"network.incoming.bytes\": 10}, \
+      \"app\": {\"cpu.usage\": 20}, \
+      \"db\": {\"cpu.usage\": 20} \
+    } \
+  }, \
+  \"template\": \"openstack_deployment_cost\", \
+  \"period\": {\"unit\": \"d\", \"duration\": 30} \
+}"
+```
 
 ### Server/Templates
 
