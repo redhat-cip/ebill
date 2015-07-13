@@ -311,13 +311,15 @@ Example :
 require 'ebill'
 
 def rate(data)
-  EBill.info("Data receive : #{data.inspect}")
+  EBill.info("eBill version #{EBill::VERSION}")
+  EBill.info("Data : #{data.inspect}")
 
   json = EBill.to_json(data)
+  EBill.info("JSON : #{json.inspect}")
 
-  # do something with data ...
-
-  EBill.ok({:total => amount, :currency => "USD"})
+  rc = EBill.ok({:total => 1023, :detail => [:some, :data]})
+  EBill.info("result : #{rc.inspect}")
+  rc
 end
 ```
 
@@ -326,15 +328,16 @@ end
 ```python
 import ebill
 
-
 def rate(data):
-    ebill.info("Data receive : {0}".format(data))
+    ebill.info("eBill version : {0}".format(ebill.VERSION))
+    ebill.info("Data: {0}".format(data))
 
     json = ebill.to_json(data)
+    ebill.info("JSON: {0}".format(json))
 
-    # do something with data ...
-
-    ebill.ok({"total": amount, "currency": "USD"})
+    rc = ebill.ok({"total": 1023, "detail": ["some", "data"]})
+    ebill.info("result: {0}".format(rc))
+    return rc
 ```
 
 **Javascript:**
