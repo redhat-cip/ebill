@@ -420,6 +420,10 @@ function rate(data) {
 
 * Grégoire Lejeune <gregoire.lejeune@enovance.com>
 
+## Contributors
+
+* https://github.com/redhat-cip/ebill/graphs/contributors
+
 ## Copyright
 
 Copyright (c) 2013-2015 eNovance.  All rights reserved.
