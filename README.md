@@ -424,6 +424,10 @@ function rate(data) {
 
 * https://github.com/redhat-cip/ebill/graphs/contributors
 
+## Integration example
+
+![](img/eBill_monglue.png)
+
 ## Copyright
 
 Copyright (c) 2013-2015 eNovance.  All rights reserved.
