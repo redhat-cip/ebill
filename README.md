@@ -4,7 +4,7 @@ A cloud-oriented rating server
 
 ## Architecture
 
-![](eBill-Infra.png)
+![](img/eBill-Infra.png)
 
 ## Installation
 
@@ -17,7 +17,7 @@ A cloud-oriented rating server
 >
 > Because the mongodb erlang driver is... not... hum...
 
-![](ebill-dependencies.gv.png)
+![](img/ebill-dependencies.gv.png)
 
 ### Configuration
 
