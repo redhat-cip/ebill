@@ -1,0 +1,9 @@
+#!/bin/sh
+
+unset http_proxy
+unset https_proxy
+
+database='ebill'
+
+/usr/bin/curl -H "Content-Type: application/json" -X POST http://localhost:5984/${database}/_compact
+/usr/bin/curl -H "Content-Type: application/json" -X POST http://localhost:5984/${database}/_view_cleanup
