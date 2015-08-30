@@ -1,0 +1,7 @@
+#!/bin/sh
+
+. /var/lib/ebill/.kerl/installs/17.5/activate
+
+cd /var/lib/ebill
+./ebill -a server console > /var/log/ebill/server.log
+./ebill -a storage console > /var/log/ebill/storage.log
