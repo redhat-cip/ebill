@@ -26,11 +26,12 @@ require 'net/http'
 redis = Redis.new
 db = 'ocwbill'
 vmsid = redis.lrange(db,'0','-1')
+monit = ARGV[0] || '10.197.180.205'
+ebill = ARGV[1] || '10.197.180.216'
 #vmsid = ['ae80d47e-bf70-43ff-be06-2fe623e0485b']
 
-def get_metric(vmid, key)
+def get_metric(vmid, key, host)
   port = 9998
-  host = '10.197.180.205'
   path = '/proactive-watch/metric'
 
   req = Net::HTTP::Get.new(path, {'resource' => vmid, 'key' => key})
@@ -41,9 +42,8 @@ def get_metric(vmid, key)
   end
 end
 
-def put_data(vmid, data)
+def put_data(vmid, data, host)
   port = 8090
-  host = '10.197.180.216'
   path = '/metrics'
 
   req = Net::HTTP::Put.new(path, {'Content-Type' => 'application/json'})
@@ -61,13 +61,13 @@ vmsid.each do |vmid|
     'project_id' => project_id,
     'resource_id' => vmid,
     'metrics' => {
-      'cpu.usage' => get_metric(vmid, 'cpu.usage'),
-      'memory.total' => get_metric(vmid, 'memory.total'),
-      'storage.used' => get_metric(vmid, 'storage.used'),
-      'network.0.tx' => get_metric(vmid, 'network.0.tx'),
-      'network.0.rx' => get_metric(vmid, 'network.0.rx')
+      'cpu.usage' => get_metric(vmid, 'cpu.usage', monit),
+      'memory.total' => get_metric(vmid, 'memory.total', monit),
+      'storage.used' => get_metric(vmid, 'storage.used', monit),
+      'network.0.tx' => get_metric(vmid, 'network.0.tx', monit),
+      'network.0.rx' => get_metric(vmid, 'network.0.rx', monit)
     }
   }
   # 3/ on envoie ces infos a ebill pour historiser
-  put_data(vmid,data.to_json)
+  put_data(vmid,data.to_json, ebill)
 end
