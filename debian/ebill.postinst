@@ -1,0 +1,40 @@
+#!/bin/sh
+# postinst script for ebill
+#
+# see: dh_installdeb(1)
+
+set -e
+
+case "$1" in
+    configure)
+      if ! getent passwd ebill > /dev/null 2>&1
+      then
+        adduser --quiet --system --group --home /var/lib/ebill \
+          --no-create-home \
+          --shell /bin/bash \
+          --gecos "OpenCloudware eBill" ebill
+      fi
+
+      if ! getent group ebill > /dev/null 2>&1
+      then
+        addgroup --quiet --system ebill
+        usermod -g ebill ebill
+      fi
+
+      chown -R ebill:adm /var/log/ebill
+      chmod 0750 /var/log/ebill
+      chmod +x /var/lib/ebill/utils/install-erlang.sh
+
+      /bin/su - ebill -c /var/lib/ebill/utils/install-erlang.sh
+
+    ;;
+
+    *)
+        echo "postinst called with unknown argument \`$1'" >&2
+        exit 1
+    ;;
+esac
+
+#DEBHELPER#
+
+exit 0

@@ -1,0 +1,3 @@
+version=3
+opts=filenamemangle=s/.+\/v?(\d\S*)\.tar\.gz/ebill-$1\.tar\.gz/ \
+  https://github.com/redhat-cip/ebill/tags .*/v?(\d\S*)\.tar\.gz

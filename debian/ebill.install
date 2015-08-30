@@ -1,0 +1,11 @@
+utils var/lib/ebill/
+apps var/lib/ebill/
+ebill var/lib/ebill/
+Emakefile var/lib/ebill/
+Makefile var/lib/ebill/
+rebar var/lib/ebill/
+rebar.config var/lib/ebill/
+src var/lib/ebill/
+templates var/lib/ebill/
+tests var/lib/ebill/
+utils/ebill usr/sbin/

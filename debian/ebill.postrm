@@ -1,0 +1,31 @@
+#!/bin/sh
+# postrm script for ebill
+#
+# see: dh_installdeb(1)
+
+set -e
+
+case "$1" in
+    purge|remove)
+      # Del user ebill (and backup home)
+      if (which deluser && getent passwd ebill) > /dev/null 2>&1; then
+        deluser --system --quiet --backup-to /var/lib ebill || true
+      fi
+
+      # Del group ebill
+      if (which delgroup && getent group ebill) > /dev/null 2>&1; then
+        delgroup --system --quiet ebill || true
+      fi
+
+      rm -rf /var/log/ebill /var/lib/ebill
+    ;;
+
+    *)
+        echo "postrm called with unknown argument \`$1'" >&2
+        exit 1
+    ;;
+esac
+
+#DEBHELPER#
+
+exit 0
