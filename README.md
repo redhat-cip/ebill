@@ -67,7 +67,7 @@ On booth server and storage nodes :
 
 * `cookie` : erlang cookie. **MUST BE IDENTICAL ON ALL NODES !!!**
 
-## Start 
+## Start
 
 **server** :
 
@@ -157,8 +157,8 @@ Data example :
   "resource_id": "FB45D8CF-0FFA-4C15-9A60-4256D997EFF9",
   "metrics": ["cpu.usage", "mem.usage"],
   "period": {
-    "start_date": "2013-01-06",
-    "end_date": "2013-30-06"
+    "start_date": "2013-06-01",
+    "end_date": "2013-06-30"
   },
   "filters": [
     {"iaas.name", "=~", "[a|A]mazon.*"},
@@ -174,8 +174,8 @@ Example :
 curl -i -X POST -H "Content-Type: application/json" http://localhost:8080/charging -d "{ \
   \"project_id\": \"EA08CC13-1C54-4044-BB67-B0529CF2E634\", \
   \"period\": { \
-    \"start_date\": \"2013-01-06\", \
-    \"end_date\": \"2013-30-06\" \
+    \"start_date\": \"2013-06-01\", \
+    \"end_date\": \"2013-06-30\" \
   }, \
   \"filters\": [ \
     {\"iaas.name\", \"=~\", \"[a|A]mazon.*\"}, \
