@@ -16,7 +16,6 @@
 
 
 # curl -X GET -H 'resource: ae80d47e-bf70-43ff-be06-2fe623e0485b' -H 'key: memory.actualfree' http://10.197.180.205:9998/proactive-watch/metric
-#
 require 'uri'
 require 'redis'
 require 'json'
@@ -28,7 +27,6 @@ db = 'ocwbill'
 vmsid = redis.lrange(db,'0','-1')
 monit = ARGV[0] || '10.197.180.205'
 ebill = ARGV[1] || '10.197.180.216'
-#vmsid = ['ae80d47e-bf70-43ff-be06-2fe623e0485b']
 
 def get_metric(vmid, key, host)
   port = 9998
