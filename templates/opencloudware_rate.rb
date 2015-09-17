@@ -18,26 +18,38 @@ require 'ebill'
 require 'uri'
 require 'net/http'
 
+# Basic billing values
+#
+# Cpu    : pct * 100
+# Memory : 0.02€ for 1Mo used
+# Storage: 0.10€ for 1Mo used
+# Network: 1.50€ for 1Mb/s used (in/out)
+
 $metrics = {
   "cpu.usage"    => {
-    "delta" => 2.0e3,  # 0.0067490907 (0.6%)
-    "total" => 0
+    "delta" => 1.0e2,  # 0.67490907%
+    "total" => 0,
+    "euros" => 100     # percent used x 100 for the euro value
   },
   "memory.total" => {
-    "delta" => 2.0e-8, # 1051701248    (1Go)
-    "total" => 0
+    "delta" => 1.0e-6, # 1051,701248 Mo
+    "total" => 0,
+    "euros" => 0.02    # 0.02€ for 1Mo
   },
   "storage.used" => {
-    "delta" => 1.0e-4, # 2045540     (204Mo)
-    "total" => 0
+    "delta" => 1.0e-4, # 204,5540 Mo
+    "total" => 0,
+    "euros" => 0.10    # 0.10€ for 1Mo
   },
   "network.0.tx" => {
-    "delta" => 1.0e-7, # 59426348   (5.9Mbs)
-    "total" => 0
+    "delta" => 1.0e-7, # 59426348 (5.9Mbs)
+    "total" => 0,
+    "euros" => 1.50    # 1.5€ for 1Mb/s
   },
   "network.0.rx" => {
-    "delta" => 1.0e-7, # 21856312   (2.1Mbs)
-    "total" => 0
+    "delta" => 1.0e-7, # 21856312 (2.1Mbs)
+    "total" => 0,
+    "euros" => 1.50    # 1.5€ for 1Mb/s
   }
 }
 
@@ -65,7 +77,8 @@ def rate(data)
 
     data.each do |r|
       if r['date'].to_i < (Time.now.to_i + month)
-        $metrics[r['metric']]['total'] += (r['value'].to_f * $metrics[r['metric']]['delta'].to_f)
+        # Metric total = All records * delta * euro multiplier
+        $metrics[r['metric']]['total'] += ((r['value'].to_f * $metrics[r['metric']]['delta'].to_f) * $metrics[r['metric']]['euros'].to_f)
         #cores = get_metric(r['resource_id'], 'cpu.cores')
         #hdd = get_metric(r['resource_id'], 'storage.total')
       end
