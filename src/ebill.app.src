@@ -1,6 +1,6 @@
 {application, ebill, [
   {description, "ebill"},
-  {vsn, "0.0.1"},
+  {vsn, "0.0.2"},
   {registered, []},
   {applications, [
     stdlib,

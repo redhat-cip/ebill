@@ -1,4 +1,4 @@
-var VERSION="0.0.1";
+var VERSION="0.0.2";
 
 if (typeof ebill !== 'object') {
   ebill = {};
@@ -6,7 +6,7 @@ if (typeof ebill !== 'object') {
 
 (function () {
   if (typeof ebill.VERSION !== 'string') {
-    ebill.VERSION="0.0.1";
+    ebill.VERSION="0.0.2";
   }
 
   if(typeof ebill.info !== 'function') {

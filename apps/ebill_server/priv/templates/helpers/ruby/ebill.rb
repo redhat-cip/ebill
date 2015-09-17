@@ -1,16 +1,16 @@
 require 'json'
 
 module EBill
-  VERSION="0.0.1"
+  VERSION="0.0.2"
 
   class <<self
-    def info(message) 
+    def info(message)
       ErlPort::Erlang.call(:error_logger, :info_msg, [message])
     end
-    def error(message) 
+    def error(message)
       ErlPort::Erlang.call(:error_logger, :error_msg, [message])
     end
-    def warning(message) 
+    def warning(message)
       ErlPort::Erlang.call(:error_logger, :warning_msg, [message])
     end
 
