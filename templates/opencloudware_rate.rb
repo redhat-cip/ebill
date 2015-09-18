@@ -59,6 +59,8 @@ def rate(data)
   json = EBill.to_json(data)
   data = json[:ok]
 
+  # {"project_id"=>"ea08cc13-1c54-4044-bb67-b0529cf2e634", "resource_id"=>"ae80d47e-bf70-43ff-be06-2fe623e0485b", "metadatas"=>[], "metric"=>"network.0.rx", "value"=>"60137855", "date"=>"2015-08-31T10:34:21.0"}
+
   def get_metric(vmid, key)
     port = 9998
     host = '10.197.180.205'
@@ -79,9 +81,10 @@ def rate(data)
       if r['date'].to_i < (Time.now.to_i + month)
         # Metric total = All records * delta * euro multiplier
         if $metrics[r['metric']] == 'cpu.usage'
-          cores = get_metric(r['resource_id'], 'cpu.cores')
-          $metrics[r['metric']]['total'] += (((r['value'].to_f * $metrics[r['metric']]['delta'].to_f) * $metrics[r['metric']]['euros'].to_f) * cores.to_i)
+          #cores = get_metric(r['resource_id'], 'cpu.cores')
           #pct_free = ((get_metric(r['resource_id'], 'storage.total').to_i - $metrics[r['value']].to_i) / 5000)
+          cores = 1
+          $metrics[r['metric']]['total'] += (((r['value'].to_f * $metrics[r['metric']]['delta'].to_f) * $metrics[r['metric']]['euros'].to_f) * cores.to_i)
         else
           $metrics[r['metric']]['total'] += ((r['value'].to_f * $metrics[r['metric']]['delta'].to_f) * $metrics[r['metric']]['euros'].to_f)
         end
