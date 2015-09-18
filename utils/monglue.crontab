@@ -1,0 +1,8 @@
+#!/bin/sh
+
+# @hourly bash /home/ocw/ebill2/utils/monglue.crontab
+
+unset http_proxy
+unset https_proxy
+
+ruby /home/ocw/monglue-clean.rb > /home/ocw/monglue-clean.log 2>&1

@@ -1,5 +1,7 @@
 #!/bin/sh
 
+# @hourly bash /home/ocw/ebill2/utils/couchdb.crontab
+
 unset http_proxy
 unset https_proxy
 
