@@ -80,14 +80,7 @@ def rate(data)
     data.each do |r|
       if r['date'].to_i < (Time.now.to_i + month)
         # Metric total = All records * delta * euro multiplier
-        if $metrics[r['metric']] == 'cpu.usage'
-          #cores = get_metric(r['resource_id'], 'cpu.cores')
-          #pct_free = ((get_metric(r['resource_id'], 'storage.total').to_i - $metrics[r['value']].to_i) / 5000)
-          cores = 1
-          $metrics[r['metric']]['total'] += (((r['value'].to_f * $metrics[r['metric']]['delta'].to_f) * $metrics[r['metric']]['euros'].to_f) * cores.to_i)
-        else
-          $metrics[r['metric']]['total'] += ((r['value'].to_f * $metrics[r['metric']]['delta'].to_f) * $metrics[r['metric']]['euros'].to_f)
-        end
+        $metrics[r['metric']]['total'] += ((r['value'].to_f * $metrics[r['metric']]['delta'].to_f) * $metrics[r['metric']]['euros'].to_f)
       end
     end
 
