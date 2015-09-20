@@ -39,23 +39,23 @@ $billing = {}
 $metrics = {
   "cpu.usage"    => {
     "delta" => 1.0e2,  # 0.67490907%
-    "euros" => 100     # percent used x 100 for the euro value
+    "euros" => 5       # percent used x 5 for the euro value
   },
   "memory.total" => {
     "delta" => 1.0e-6, # 1051,701248 Mo
-    "euros" => 0.02    # 0.02€ for 1Mo
+    "euros" => 0.002   # 0.02€ for 1Mo
   },
   "storage.used" => {
     "delta" => 1.0e-4, # 204,5540 Mo
-    "euros" => 0.10    # 0.10€ for 1Mo
+    "euros" => 0.05    # 0.05€ for 1Mo
   },
   "network.0.tx" => {
     "delta" => 1.0e-7, # 59426348 (5.9Mbs)
-    "euros" => 1.50    # 1.5€ for 1Mb/s
+    "euros" => 0.5     # 0.5€ for 1Mb/s
   },
   "network.0.rx" => {
     "delta" => 1.0e-7, # 21856312 (2.1Mbs)
-    "euros" => 1.50    # 1.5€ for 1Mb/s
+    "euros" => 0.5     # 0.5€ for 1Mb/s
   }
 }
 
