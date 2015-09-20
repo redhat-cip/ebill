@@ -83,10 +83,10 @@ def rate(data)
       e = $billing.fetch(day, { "cpu.usage" => 0, "memory.total" => 0, "storage.used" => 0, "network.0.tx" => 0, "network.0.rx" => 0 })
       # Metric total = All records * delta * euro multiplier
       e[r['metric']] += ((r['value'].to_f * $metrics[r['metric']]['delta'].to_f) * $metrics[r['metric']]['euros'].to_f)
+      e[r['metric']] = e[r['metric']].round(2)
       $billing[day] = e
     end
 
-    cost = cost.round(2)
     EBill.info("Billing info #{$billing}")
     return $billing
   end
