@@ -25,7 +25,7 @@ case "$1" in
       chmod 0750 /var/log/ebill
       chmod +x /var/lib/ebill/utils/install-erlang.sh
 
-      /bin/su - ebill -c /var/lib/ebill/utils/install-erlang.sh
+      #su - ebill -c /var/lib/ebill/utils/install-erlang.sh
 
     ;;
 

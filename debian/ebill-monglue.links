@@ -1,1 +1,1 @@
-usr/local/sbin/monglue-register.rb usr/sbin/ebill-monglue-register
+var/lib/ebill-monglue/monglue-register.rb usr/sbin/ebill-monglue-register
