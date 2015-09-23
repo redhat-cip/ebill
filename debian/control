@@ -11,26 +11,30 @@ Vcs-Browser: https://github.com/redhat-cip/ebill.git
 Package: ebill
 Architecture: any
 Depends: adduser,
-         couchdb,
          curl,
          devscripts,
+         erlang-dev,
          flex,
          fop,
+         git,
          libicu-dev,
          libmozjs185-dev,
          libncurses5-dev,
          libssl-dev,
          m4,
+         make,
          openssl,
          python-pygments,
          ruby-dev,
-         ruby2.1,
+         ruby2.1 | ruby2.0 | ruby1.9.3,
          tmux,
          unixodbc-dev,
          vim-nox,
+         uuid-runtime,
          zlib1g-dev,
          ${misc:Depends},
          ${shlibs:Depends}
+Recommends: couchdb
 Description: eBill, a billing server for the Cloud
  eBill is a charging and billing server for cloud environments,
  this server and storage server was developed for the OpenCloudWare
@@ -41,12 +45,12 @@ Architecture: all
 Depends: adduser,
          redis-server,
          ruby-dev,
-         ruby-http,
+         ruby-http | ruby-httpclient,
          ruby-json,
          ruby-redis,
          ruby-sinatra,
+         ruby2.1 | ruby2.0 | ruby1.9.3,
          ${misc:Depends},
-         ruby2.1,
          ${shlibs:Depends}
 Description: Monglue server for ebill
  Monglue is a little REST-full API in order to made the glue between
