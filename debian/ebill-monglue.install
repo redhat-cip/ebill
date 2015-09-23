@@ -1,1 +1,3 @@
 monglue/* var/lib/ebill-monglue/
+utils/ebill-monglue-register usr/sbin/
+utils/ebill-monglue-control usr/sbin/

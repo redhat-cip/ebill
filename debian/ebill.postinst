@@ -24,8 +24,7 @@ case "$1" in
       chown -R ebill:adm /var/log/ebill
       chmod 0750 /var/log/ebill
       chmod +x /var/lib/ebill/utils/install-erlang.sh
-
-      #su - ebill -c /var/lib/ebill/utils/install-erlang.sh
+      chown -R ebill. /var/lib/ebill
 
     ;;
 

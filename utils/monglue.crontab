@@ -5,4 +5,4 @@
 unset http_proxy
 unset https_proxy
 
-ruby /home/ocw/monglue-clean.rb > /home/ocw/monglue-clean.log 2>&1
+ruby /var/lib/ebill-monglue/monglue-clean.rb > /tmp/monglue-clean.log 2>&1

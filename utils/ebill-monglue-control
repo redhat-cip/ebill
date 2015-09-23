@@ -1,0 +1,11 @@
+#!/bin/sh
+
+monit=$1
+ebill=$2
+inter=$3
+
+while true;
+do
+  /usr/bin/ruby /var/lib/ebill-monglue/monglue-control.rb "$monit" "$ebill" > /tmp/ebill-monglue-control.log
+  sleep "$inter"
+done

@@ -1,0 +1,3 @@
+#!/bin/sh
+
+/usr/bin/ruby /var/lib/ebill-monglue/monglue-register.rb > /tmp/monglue-register.log 2>&1 &
