@@ -1,7 +1,22 @@
 #!/bin/sh
 
-. /var/lib/ebill/.kerl/installs/17.5/activate
+if [ -f /var/lib/ebill/.kerl/installs/activate ]; then
+  . /var/lib/ebill/.kerl/installs/activate
+elif [ -f /var/lib/ebill/.kerl/installs/17.5/activate ]; then
+  . /var/lib/ebill/.kerl/installs/17.5/activate
+elif [ -f /var/lib/ebill/.kerl/installs/17/activate ]; then
+  . /var/lib/ebill/.kerl/installs/17/activate
+else
+  echo 'no erlang ?'
+fi
 
 cd /var/lib/ebill
-./ebill -a server console > /var/log/ebill/server.log
-./ebill -a storage console > /var/log/ebill/storage.log
+
+if [ ! -d /var/lib/ebill/deps ]; then
+  make
+fi
+
+./ebill -a server stop > /var/log/ebill/server.log 2>&1
+./ebill -a server start > /var/log/ebill/server.log 2>&1
+./ebill -a storage stop > /var/log/ebill/storage.log 2>&1
+./ebill -a storage start > /var/log/ebill/storage.log 2>&1

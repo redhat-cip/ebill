@@ -1,6 +1,7 @@
 #!/bin/sh
 
-cd ~
+export HOME="/var/lib/ebill"
+cd $HOME
 /usr/bin/curl -s -O https://raw.githubusercontent.com/spawngrid/kerl/master/kerl
 mkdir ~/bin
 
