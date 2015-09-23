@@ -1,2 +1,1 @@
-var/lib/ebill/ebill usr/sbin/ebill
 var/lib/ebill/couchdb.crontab usr/sbin/ebill-maintenance
