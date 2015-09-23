@@ -1,5 +1,8 @@
 #!/bin/sh
 
+export HOME="/var/lib/ebill"
+cd $HOME
+
 if [ -f /var/lib/ebill/.kerl/installs/activate ]; then
   . /var/lib/ebill/.kerl/installs/activate
 elif [ -f /var/lib/ebill/.kerl/installs/17.5/activate ]; then
@@ -9,8 +12,6 @@ elif [ -f /var/lib/ebill/.kerl/installs/17/activate ]; then
 else
   echo 'no erlang ?'
 fi
-
-cd /var/lib/ebill
 
 if [ ! -d /var/lib/ebill/deps ]; then
   make
